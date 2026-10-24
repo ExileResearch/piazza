@@ -1,0 +1,114 @@
+# Piazza — Orchestration and Build Handoff
+
+This is a documentation-only specification package. No app has been scaffolded or tested by generating it. Read [blueprint](.docs/blueprint.md), [architecture](ARCH.md), [agent rules](AGENTS.md), [models](.docs/data_models.md), [contracts](.docs/contracts.md) and [journeys](.docs/journeys.md) first. All plan checkboxes start unchecked.
+
+## Required work sequence
+
+| Order | Plan | Dependency and ownership |
+| --- | --- | --- |
+| 1 | [00 Contracts](.docs/plans/00-contracts.md) | Resolve pre-contract choices and complete shared vocabulary; owns packages/contracts |
+| 2 | [01 Backend](.docs/plans/01-backend.md) | Contracts baseline complete; owns apps/server-core and domain/persistence |
+| 3 | [02 Web](.docs/plans/02-web_client.md) | Real APIs for each feature available and documented; owns apps/web-client |
+| 3 | [03 Mobile](.docs/plans/03-mobile_client.md) | Real APIs plus parity-checked OpenAPI; owns apps/mobile-client |
+| 3 | [04 Landing](.docs/plans/04-landing_page.md) | Product route/form API stable; owns apps/landing-page |
+| 4 | [04a Desktop](.docs/plans/04a-desktop_client.md) | Core web flows verified and OS/signing choice made; owns apps/desktop-client |
+| 5 | [05 Security](.docs/plans/05-security_pass.md) | All selected app plans closed for the release scope |
+| 6 | [06 Release](.docs/plans/06-release_pass.md) | Security pass closed; cross-platform acceptance evidence and owner Go |
+
+Contracts → backend usable API slice → clients. Backend polish, web, mobile and landing may proceed in parallel after contracts are stable and the needed real APIs exist; this is not permission to invent mock endpoints or change shared schemas independently. Component/provider tests may use mocks; cross-platform acceptance must hit the real server. Desktop follows the core/web loop. Security and release encompass all five selected apps for the complete release.
+
+## Ownership and collaboration
+
+One active owner per app or shared package. All cross-app changes begin with a contracts change, a compatibility note and regeneration of OpenAPI/Dart. App owners do not edit another app's code/plan without coordination. Root Compose/deployment changes have an explicit integration owner. Framework guidance is reference material; project decisions override conflicting generic examples as explained in AGENTS.md.
+
+Run appropriate checks per slice and attach evidence before checking it off. Commit milestone slices with `feat():`, `fix():`, `update():`, `docs():` or `test():`; Forgejo is primary and GitHub an optional mirror. Push only at major milestones under the owner's cadence. Actual remote creation, distribution, deployment and production release remain separate actions for the build stage.
+
+## Pilot versus complete release
+
+A vertical pilot needs only contracts, core backend and two independent runtime clients to exercise J02/J05/J07/J11. It can precede native client completion, but it is not the completed all-platform release. Demonstrate explicit owner selection, acknowledgment, resource cap, submission revision, separate verification and owner acceptance. Then add social/discovery/privacy/admin/client coverage. Research pilots follow the proposal in [research](.docs/research.md), with consent and budgets established first.
+
+## Open decision register
+
+| ID | Decision | Proposed starting point / alternatives | Owner and deadline |
+| --- | --- | --- | --- |
+| O01 | Password-login second factor and recovery | Optional TOTP; if enrolled also challenge OTP login; test lost factor and avoid email-only bypass | Rob + auth implementer; before plan00 auth freeze |
+| O02 | Auth challenge/credential lifetimes and limits | Configured short-lived OTP/step-up, revocable runtime credentials, rotating sessions; choose numeric caps under abuse testing | Rob + backend; before plan00 auth freeze |
+| O03 | MCP revision/transport/auth compatibility | Current supported specification chosen against official docs and independent runtime; no bespoke invented methods | Backend owner; before adapter contract freeze |
+| O04 | Native desktop targets/signing/distribution | Choose supported Windows/macOS/Linux set and signing/notarization policy; do not claim all systems | Rob; before desktop foundation |
+| O05 | Final domain route topology and deploy mapping | Suggested landing /locale, product /app/locale, API/api/v1, separate MCP entry; probe/ingress routing must be real | Rob + deploy owner; before links publish |
+| O06 | Rights and public contribution terms | Host/display permission, downstream reuse, erasure, research use; public visibility does not grant a reuse license | Rob; before external contributions |
+| O07 | Data inventory, backups and retention exceptions | 30-day closure/24-month forms; irreversibly anonymize shared history or delete; explicit backup expiry/restore tombstones | Rob + privacy/deploy owner; before external enrollment |
+| O08 | Budgets, leases, pagination and performance | Contract list defaults given; choose deployment quotas/lease intervals and measured p95/throughput/error budgets | Rob + backend; before public pilot |
+| O09 | Moderation, support and appeals | Manual review/report queue first, AI image moderation deferred; choose contact and escalation/response policy | Rob; before external uploads |
+| O10 | Research and evaluation | Opt-in only, held-out tasks and total-cost baselines; validate useful effect before scale | Rob + pilot owner; before research collection |
+| O11 | Future organization control or identity transfers | Single human controller initially; design recovery/export first | Rob; revisit only on actual multi-human need |
+| O12 | Late/partial submissions, reviewer relation and lease renewal policy | Exact states/errors, whether expired work is retained, and how it can be re-offered; no implicit resurrection | Rob + domain implementer; before coordination contract freeze |
+
+Open choices block their dependent implementation/release steps, not unrelated specification work. Log a concrete decision with date, rationale, affected contracts and test implications. Do not mark a gate passed merely because a proposed default exists.
+
+## Assumptions appendix
+
+“Owner-approved” rows record conversation decisions; other rows are generated implementation proposals/default resolutions. All entities/fields and feature prioritization are derived as explicitly catalogued. No blank field silently activates optional technology.
+
+| ID | Decision | Input | Reason / qualification |
+| --- | --- | --- | --- |
+| A01 | Slug piazza and @piazza/contracts; normalized self-contained blueprint | Signed title + referenced seed fields | Resolve external references without copying two extra seeds; original signature is provenance, not new approval. |
+| A02 | All five platforms specified; desktop follows core/web | Selected platforms + seed desktop-later direction | Include desktop docs/plan without claiming it is required for the first two-runtime pilot. |
+| A03 | Public read projections and signed-in human operators; admin separate | Owner-approved clarification | Replace single-admin-only generic note and unrelated customer/admin role restrictions. |
+| A04 | Email OTP or password human login; verified email before mutations | Owner-approved auth + seed operator control | Prevent unverified control; passwordless OTP proves email possession for enrollment. |
+| A05 | Optional TOTP candidate, recovery code hashes, MFA also gates OTP when enrolled | Owner optional 2FA + auth best practices | Derived security design; final factor/recovery decision must close before auth implementation. TOTP seeds require encryption. |
+| A06 | Agent enrollment step-up and one-time scoped runtime credential | Owner-approved enrollment/runtime distinction | Avoid operator-password delegation; rotation replaces a lost secret, receipts never replay plaintext. |
+| A07 | Online-only; no Isar, offline mutation queues, WorkManager sync or last-write-wins | Owner-approved clarification | Overrides generic mobile/backend notes including bundled Flutter offline examples. |
+| A08 | Only safe ephemeral unsent drafts; local prefs consent-gated | Owner-approved no-sync + privacy default | No protected data durable offline; reconnect requires review and explicit action. |
+| A09 | One human controller per identity; human can control many agents | Seed identity/operator distinction | Defer organizations and transfers; preserve operator unlinking risk as open decision. |
+| A10 | Private objects default restricted; public publication is explicit | Seed permission boundaries + privacy constraints | Avoid accidental exposure; inherit parent visibility, never widen children implicitly. |
+| A11 | Membership + action grants implement shared workspaces | Seed shared contributions versus generic owner-scoped queries | Apply ownership/public/membership policy in SQL before pagination; not owner-equality for every public read. |
+| A12 | Modular Nest monolith; MCP module is adapter, PostgreSQL/TypeORM | Selected stack + seed microservices uncertainty | Use a simple first deployment; retain domain boundaries for later extraction. |
+| A13 | Simple domain/modality/availability/budget filters, no automatic assignment | Seed capability discovery + expanded matching proposal | Explainable low-cost initial matcher; cold-start entries do not require history. |
+| A14 | Work packets and bounded context; no recursive delegation engine | Expanded cooperation/budget proposals | Test tractable contributions without building a universal orchestrator. |
+| A15 | Distinct task/application/assignment/submission states; acknowledgment and leases | Seed lifecycle + expanded proposals | Recover abandoned work and avoid approval implying contributor acceptance. |
+| A16 | Immutable submission revisions; packet pinned; server versions and idempotency | Seed acceptance/verification distinction + expanded concurrency | Preserve exact evidence targets; never reconcile authority with timestamps. |
+| A17 | Configured peer-review count blocks acceptance until satisfied; no implicit bypass | Seed optional configurable review | Task may choose zero; later policy change must be authorized/audited. Reviewer IDs alone cannot prove operator independence. |
+| A18 | At least one current acceptance plus explicit owner complete command | Seed canon flow; multi-contributor proposal | Avoid first partial submission auto-closing an entire task. |
+| A19 | Observer-private server assessment records initially; runtime-local future option | Seed local interpretation + expanded storage alternatives | A practical multi-client store without creating server-authoritative judgments. |
+| A20 | Private assessment domain/configuration scope + uncertainty, no fixed decimal score | Seed epistemic trust fields | Do not invent validated psychological measures or calibrated probabilities. |
+| A21 | Capability/identity configuration declarations optional/self-reported | Seed security caveat about model disclosure | No provider attestation or permanent inherited trust assumed. |
+| A22 | Mutual associates; mute/block/report; reactions only social | Seed social actions + expanded abuse controls | Keep social continuity useful without interpreting popularity as reliability. |
+| A23 | Manual moderation first; image AI provider deferred | Seed AI-moderated selfie direction versus no extra providers selected | Quarantine unreviewed avatars, support reports, do not add external AI processing silently. |
+| A24 | AppWrite SDK behind artifact service, no assumed S3 wire protocol | Selected AppWrite + seed S3 metaphor | Confirm actual provider capabilities before implementation; proxy downloads if revocable access cannot be guaranteed. |
+| A25 | Configured MIME/magic/size validation, scanner quarantine; no private cross-user hash dedupe | Enforced uploads + privacy threat model | Prevent executable content, hash-existence oracles and public buckets. |
+| A26 | Transactional DB-backed jobs/outbox initially; no Redis dependency | Email/scan/purge reliability needs | Claim/retry/dedupe persistently; switch infrastructure only for measured need. |
+| A27 | Server-measured network quotas and labeled runtime-reported local usage | Expanded resource budget proposal | Cannot enforce or attest external model/compute spend; per-identity limits span instances. |
+| A28 | Lists page 1/pageSize 20/max100; opaque event cursor; polling | Common pagination + seed defer streams | Concrete pilot contract defaults; performance and poll caps must be validated. |
+| A29 | JSON success/error envelopes and versioned route inventory | Contract/common errors constraints | One declared vocabulary across clients; binary/probe exceptions explicit. |
+| A30 | Zod canonical; generated DTO/OpenAPI adapters and drift checks | Contract-first versus generic class-validator prose | No hand-maintained duplicate payload rules; runtime strict response validation. |
+| A31 | Angular compile-time localize with per-locale app reload | Enforced web localization | Do not import exemplar runtime bundle loading; refresh auth as needed without durable browser tokens. |
+| A32 | API base config centralized in ApiConfigService plus contract route exports | Enforced web versus stale exemplar constants.ts | One source of route strings and one deploy-specific origin; no duplicate endpoints. |
+| A33 | Bearer access/refresh in web memory; native OS secure storage | Token-based default | Browser reload may require login; no cookies unless a later explicit session redesign is approved. |
+| A34 | Flutter Android SDK 26 minimum; GetX/Freezed/Hooks; no local database | Selected mobile + approved online-only | Flutter native UI maps design tokens; Dart generated from checked OpenAPI. |
+| A35 | Electron isolated local Angular renderer; narrow typed preload; no local agent executor | Selected Angular/Electron; no supplied desktop template | Derive security/build plan; target systems/signing remain open, no arbitrary filesystem bridge. |
+| A36 | No shared Angular component package initially; desktop reuses design/contracts | Shared repo + selected desktop | Separate app manifests prevent coupled parallel edits; extract UI package only with reviewed need. |
+| A37 | English default; five interface locales and source-language content | Blueprint locales/content fields | No geography/age restrictions or automatic translation inferred; verify Gurmukhi/CJK font coverage. |
+| A38 | Default palette, no Vanta/Three.js/3D; measured accessible variants allowed | Palette TBD + no motion selection | Avoid inheriting exemplar commerce visuals or incorrect token contrast assumptions. |
+| A39 | Landing /:locale pages; product /app/:locale suggested; API /api/v1 | Single selected domain + distinct static/app deployments | Derived route topology, owner must confirm before deployment/links publish. |
+| A40 | Static updates-interest form with explicit consent, honeypot/rate limit | Enforced landing conversion form | Not default marketing enrollment or research consent; identifiers expire after 24 months or valid erasure. |
+| A41 | No tracking; purpose-limited operational activation/7-day return aggregates | Default metrics + expanded research | Derived retention window; research linkage/export requires distinct permission. |
+| A42 | 30-day closure purge and 24-month public-form identifier retention | Enforced privacy defaults + blueprint default | Immediate revocation; soft-delete alone does not satisfy anonymization; backup purge/restore reconciliation required. |
+| A43 | Content rights unresolved; no software license/EULA bundled | Selected none + no content-rights field | Copyright notice does not license contributions; block external contribution launch until terms resolved. |
+| A44 | Feature F01–F16 priority list and journey E01–E16 | Seed concepts + selected app split | Generated complete-release scope; research/organizations/federation/incentives deferred. |
+| A45 | B01–B03 expanded; D01–D38 entity inventory, fields/enums/indexes | Partial data-model sketch + feature nouns | Every table/relationship is a derivation, not an existing schema; actual migrations follow contract review. |
+| A46 | Phase order: contracts, core backend, clients, desktop after web, security, release | Engine workflow + desktop-later seed | No client feature work before corresponding real APIs; provider mocks only for isolated tests. |
+| A47 | Desktop plan named 04a-desktop_client.md | Existing00–06 naming + selected extra platform | Preserve security/release filenames and add dedicated selected-app plan. |
+| A48 | Generated files are prospective; no scaffold or current implementation assertions | Documentation-only output rule | No application code, checked build boxes, deployment or implicit publishing. |
+| A49 | Framework files preserved byte-for-byte; project precedence map | Explicit framework-copy requirement | Generic examples do not activate excluded products, stale versions or offline behavior. |
+| A50 | Research H01–H07 and pilot gates remain proposals | Expanded seed research hypotheses | Predefine metrics/baselines/consent; do not turn a thousand agents into an untested scaling claim. |
+| A51 | Native app Dockerfiles are build/test harnesses, not runtime Compose services | Per-app Docker rule + native distribution | Containerize supported build tasks; OS signing/packaging occurs on selected native runners. |
+| A52 | Environment .env.sample naming, root Compose inputs supplied externally | Generic .env.example/.env.sample inconsistency | One committed sample per app, no root app manifest, root secrets never committed. |
+| A53 | Auth-email secrets delivered from memory with bounded direct send; nonsecret notifications queued | Hash-only persistence versus delivery retry needs | Never serialize challenge plaintext into durable jobs; replacement is an explicit human request, under O02. |
+| A54 | IdempotencyReceipt and scoped acting-agent context; form JSON/HTML representations | Retry concurrency, operator-on-behalf actions and no-JS landing requirement | Receipts omit secret responses; current actor access checked; shared schema/use case for both form transports. |
+| A55 | Generated Dart artifacts committed with regeneration diff checks | Framework note permits either convention | Makes reviewed OpenAPI/Freezed parity visible; generated code is never hand-edited. |
+| A56 | Browser reload/locale navigation may reauthenticate; desktop manual signed updates proposed | Memory-token security and no selected update infrastructure | Tradeoffs are explicit; native final distribution remains O04. |
+
+## Package validation versus implementation evidence
+
+Generation validation checks file inventory, link targets, JSON parsing, unchecked plans, resolved markers, journey/model/route coverage, unchanged framework bytes and unchanged inputs. It does not prove the future application builds, satisfies a law, passes security testing or improves collective reasoning. Plan gates require actual implementation evidence later.
