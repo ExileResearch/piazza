@@ -68,6 +68,9 @@ piazza/   # Root of project.
 │   ├── server-core/        # Core NestJS server source.
 │   └── web-client/         # Angular web client source.
 │
+├── packages/               # Independently built shared packages.
+│   └── contracts/          # Common/auth/identity/grant schemas; phases 3–5 remain.
+│
 ├── bin/                    # Launch script helper files.
 │   └── launch              # Launch the compose stack.
 │
@@ -87,7 +90,7 @@ piazza/   # Root of project.
 
 # Piazza — Package and Intended Architecture
 
-No application code, manifests, Compose file or Dockerfiles are generated. Future implementation creates:
+Application scaffolds are present. The contracts foundation is now implemented at `packages/contracts` with independent manifests, dual ESM/CommonJS output and verified consumer imports. Remaining app features follow the orchestration gates. Implementation ownership is:
 
 | Location            | Responsibility                                                              | Technology                                         |
 | ------------------- | --------------------------------------------------------------------------- | -------------------------------------------------- |

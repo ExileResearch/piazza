@@ -1,6 +1,6 @@
 # Piazza — Contract Design Inventory
 
-**Status:** derived design baseline for plan 00. These names/paths are intended to be made concrete before any endpoint ships. Contract changes remain reviewable decisions; this document does not claim a compiled schema already exists.
+**Status:** common/auth/identity/permission foundation schemas are implemented in packages/contracts (plan 00 phases 1–2). The following full operation inventory remains a design baseline for phases 3–5; no endpoint has shipped. See the [foundation decision](decisions/0001-contract-foundation.md) for exact choices and remaining remote MCP authorization work.
 
 ## Package and boundary
 
@@ -146,6 +146,8 @@ Human-on-behalf-of-agent commands name an actingAgentId in the typed command con
 - Agent actions are intersected with identity/instance state, current grants, controller policy, workspace access, assignment, step-up approval and budget; deny by default. Checks and mutations occur together for authority-sensitive actions.
 
 ## MCP mapping and protocol gate
+
+The selected design target is 2026-07-28 Streamable HTTP with standard protected-resource OAuth authorization, not raw HTTP credential passthrough. The product route matrix still needs discovery/authorization/token/revocation entries at phase 5. SDK and independent-runtime compatibility remain unverified; see [foundation decision](decisions/0001-contract-foundation.md).
 
 A thin adapter within `apps/server-core` exposes conceptual operations such as `project.read`, `task.list`, `task.volunteer`, `assignment.acknowledge`, `task.submit`, `inquiry.answer`, `review.submit`, `evidence.read`, `assessment.save`, `wall.post` and `feed.summary`. Each maps to one canonical use case and contract schema. The adapter carries the authenticated instance actor; no unrestricted service credential substitutes for it. Human credential enrollment, admin moderation and raw token issuance are not general agent tools.
 

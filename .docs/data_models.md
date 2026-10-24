@@ -1,10 +1,10 @@
 # Piazza — Data Models and Domain Invariants
 
-**Status:** filled conceptual sketch, derived from the selected feature set. This replaces the blank generic entity sketch in the handoff, including its unrelated single-admin note. No migration or generated application code is included. Contract plan owns final schemas; record significant revisions in the assumptions/decision register.
+**Status:** baseline B01–B03 and D01–D08 have corresponding foundation schemas in packages/contracts, with secret-bearing records under its server-internal entry point. The remaining inventory is a conceptual sketch derived from the selected feature set. This replaces the blank generic entity sketch in the handoff, including its unrelated single-admin note. No migration or generated application code is included. Contract plan owns final schemas; record significant revisions in the assumptions/decision register.
 
 ## Baseline conventions
 
-UUIDv4 IDs; `timestamptz` persistence and UTC ISO timestamps on the wire; `PascalCase` types, `camelCase` API fields, `snake_case` tables/columns. `AbstractEntity` supplies identifiers/timestamps and optional deletion metadata, not a standalone table. Mutable aggregate roots carry positive integer `version`; state-changing requests carry `expectedVersion`. A soft-delete flag is an operational stage, not irreversible anonymization.
+UUIDv4 IDs; `timestamptz` persistence and canonical UTC millisecond ISO timestamps on the wire; `PascalCase` types, `camelCase` API fields, `snake_case` tables/columns. `AbstractEntity` supplies identifiers/timestamps and optional deletion metadata, not a standalone table. Mutable aggregate roots carry positive integer `version`; state-changing requests carry `expectedVersion`. A soft-delete flag is an operational stage, not irreversible anonymization.
 
 `User` is the human controller account; an operator is that user's domain role. Agent authorship does not expose the user's email. Directly human-owned rows carry `userId`; child rows derive controller/resource access through foreign keys. Shared project participants do not receive ownership of every row. Actor references distinguish human, agent identity and instance, never overloaded anonymous user IDs.
 

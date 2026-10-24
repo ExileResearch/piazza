@@ -1,6 +1,10 @@
 # Piazza — Orchestration and Build Handoff
 
-This is a documentation-only specification package. No app has been scaffolded or tested by generating it. Read [blueprint](.docs/blueprint.md), [architecture](ARCH.md), [agent rules](AGENTS.md), [models](.docs/data_models.md), [contracts](.docs/contracts.md) and [journeys](.docs/journeys.md) first. All plan checkboxes start unchecked.
+The specification package is now in implementation. Existing app scaffolds are retained, and the first contracts foundation milestone is verified. Read [blueprint](.docs/blueprint.md), [architecture](INDEX.md), [agent rules](AGENTS.md), [models](.docs/data_models.md), [contracts](.docs/contracts.md) and [journeys](.docs/journeys.md) first. Plan checkboxes record verified progress; unchecked items remain future work.
+
+## Current implementation status — 2026-10-24
+
+Plan 00 phases 1–2 are complete: independently locked/built contracts, common/auth/agent/permission projections, internal record separation and verified ESM/CommonJS consumption. The [foundation decision](.docs/decisions/0001-contract-foundation.md) records authority/auth choices and the owner-confirmed late/partial evidence policy. Plan 00 phases 3–5 remain; the backend contract gate is not closed. The earlier generation report is historical and does not describe these new implementation checks.
 
 ## Required work sequence
 
@@ -31,9 +35,9 @@ A vertical pilot needs only contracts, core backend and two independent runtime 
 
 | ID | Decision | Proposed starting point / alternatives | Owner and deadline |
 | --- | --- | --- | --- |
-| O01 | Password-login second factor and recovery | Optional TOTP; if enrolled also challenge OTP login; test lost factor and avoid email-only bypass | Rob + auth implementer; before plan00 auth freeze |
-| O02 | Auth challenge/credential lifetimes and limits | Configured short-lived OTP/step-up, revocable runtime credentials, rotating sessions; choose numeric caps under abuse testing | Rob + backend; before plan00 auth freeze |
-| O03 | MCP revision/transport/auth compatibility | Current supported specification chosen against official docs and independent runtime; no bespoke invented methods | Backend owner; before adapter contract freeze |
+| O01 | [Foundation baseline selected](.docs/decisions/0001-contract-foundation.md): password-login second factor and recovery | Optional TOTP; if enrolled also challenge OTP login; test lost factor and avoid email-only bypass | Rob + auth implementer; before plan 00 auth freeze |
+| O02 | [Provisional server limits selected](.docs/decisions/0001-contract-foundation.md): auth challenge/credential lifetimes and limits | Configured short-lived OTP/step-up, revocable runtime credentials, rotating sessions; choose numeric caps under abuse testing | Rob + backend; before plan 00 auth freeze |
+| O03 | [Design target selected; interoperability pending](.docs/decisions/0001-contract-foundation.md): MCP revision/transport/auth compatibility | Current supported specification chosen against official docs and independent runtime; no bespoke invented methods | Backend owner; before adapter contract freeze |
 | O04 | Native desktop targets/signing/distribution | Choose supported Windows/macOS/Linux set and signing/notarization policy; do not claim all systems | Rob; before desktop foundation |
 | O05 | Final domain route topology and deploy mapping | Suggested landing /locale, product /app/locale, API/api/v1, separate MCP entry; probe/ingress routing must be real | Rob + deploy owner; before links publish |
 | O06 | Rights and public contribution terms | Host/display permission, downstream reuse, erasure, research use; public visibility does not grant a reuse license | Rob; before external contributions |
@@ -42,7 +46,7 @@ A vertical pilot needs only contracts, core backend and two independent runtime 
 | O09 | Moderation, support and appeals | Manual review/report queue first, AI image moderation deferred; choose contact and escalation/response policy | Rob; before external uploads |
 | O10 | Research and evaluation | Opt-in only, held-out tasks and total-cost baselines; validate useful effect before scale | Rob + pilot owner; before research collection |
 | O11 | Future organization control or identity transfers | Single human controller initially; design recovery/export first | Rob; revisit only on actual multi-human need |
-| O12 | Late/partial submissions, reviewer relation and lease renewal policy | Exact states/errors, whether expired work is retained, and how it can be re-offered; no implicit resurrection | Rob + domain implementer; before coordination contract freeze |
+| O12 | [Owner confirmed evidence retention and reassignment](.docs/decisions/0001-contract-foundation.md): late/partial submissions, reviewer relation and lease renewal policy | Exact states/errors, whether expired work is retained, and how it can be re-offered; no implicit resurrection | Rob + domain implementer; before coordination contract freeze |
 
 Open choices block their dependent implementation/release steps, not unrelated specification work. Log a concrete decision with date, rationale, affected contracts and test implications. Do not mark a gate passed merely because a proposed default exists.
 
@@ -108,6 +112,11 @@ Open choices block their dependent implementation/release steps, not unrelated s
 | A54 | IdempotencyReceipt and scoped acting-agent context; form JSON/HTML representations | Retry concurrency, operator-on-behalf actions and no-JS landing requirement | Receipts omit secret responses; current actor access checked; shared schema/use case for both form transports. |
 | A55 | Generated Dart artifacts committed with regeneration diff checks | Framework note permits either convention | Makes reviewed OpenAPI/Freezed parity visible; generated code is never hand-edited. |
 | A56 | Browser reload/locale navigation may reauthenticate; desktop manual signed updates proposed | Memory-token security and no selected update infrastructure | Tradeoffs are explicit; native final distribution remains O04. |
+
+| A57 | UTC timestamps have canonical millisecond precision | Node clock/Date JSON output | Avoid submillisecond expiry ambiguity; explicit wire-format choice recorded in foundation decision. |
+| A58 | Auth TTL/attempt/password/TOTP/recovery defaults | O01/O02 implementation baseline | Reversible validated server defaults, not client-selected values or legal/security certification. |
+| A59 | ESM and CommonJS declarations/runtime; Node 24, TS 5.9.3, Zod 4.6.6 | Existing Nest/Jest and independent client needs | Tested packed consumers without root hoisting; pins documented in package lock. |
+| A60 | Remote MCP requires standard protected-resource authorization beyond original product routes | Official 2026-07-28 specification review | Discovery/PKCE/token/revocation contracts must be added at phase 5; no passthrough of arbitrary HTTP runtime credentials. |
 
 ## Package validation versus implementation evidence
 

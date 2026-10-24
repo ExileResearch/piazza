@@ -50,7 +50,7 @@ Validated per-app environment with complete .env.sample; secrets injected by dep
 
 ## 6. Framework guidance and precedence
 
-The framework directory is preserved verbatim. Use the relevant files listed in [ARCH](ARCH.md), but project rules above supersede generic/off-domain examples. In particular: Flutter offline/Isar is excluded; single-admin/customer-only and Stripe examples do not apply; runtime Angular translation suggestions do not replace compile-time localize; generic workspace commands do not create a root workspace; validation DTOs derive from contracts. Version anchors, package method examples and compatibility claims are historical reference notes, not verified current versions. Validate official documentation and pin compatible versions during implementation. Keep preserved framework files unchanged; record corrections in project docs.
+The framework directory is preserved verbatim. Use the relevant files listed in [INDEX](INDEX.md), but project rules above supersede generic/off-domain examples. In particular: Flutter offline/Isar is excluded; single-admin/customer-only and Stripe examples do not apply; runtime Angular translation suggestions do not replace compile-time localize; generic workspace commands do not create a root workspace; validation DTOs derive from contracts. Version anchors, package method examples and compatibility claims are historical reference notes, not verified current versions. Validate official documentation and pin compatible versions during implementation. Keep preserved framework files unchanged; record corrections in project docs.
 
 ## 7. Definition of done
 

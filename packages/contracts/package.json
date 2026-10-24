@@ -1,0 +1,53 @@
+{
+  "name": "@piazza/contracts",
+  "version": "0.1.0",
+  "description": "Framework-neutral Piazza wire schemas and inferred types",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    },
+    "./server-internal": {
+      "import": {
+        "types": "./dist/esm/server-internal.d.ts",
+        "default": "./dist/esm/server-internal.js"
+      },
+      "require": {
+        "types": "./dist/cjs/server-internal.d.ts",
+        "default": "./dist/cjs/server-internal.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "tsc --noEmit",
+    "test": "node --test test/*.test.mjs",
+    "lint": "prettier --check .",
+    "format": "prettier --write .",
+    "verify": "node scripts/verify.mjs"
+  },
+  "peerDependencies": {
+    "zod": "^4.6.6"
+  },
+  "devDependencies": {
+    "zod": "4.6.6",
+    "typescript": "5.9.3",
+    "prettier": "3.8.1"
+  }
+}
