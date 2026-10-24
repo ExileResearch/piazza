@@ -1,7 +1,25 @@
 import { z } from "zod";
 import { secretSchema } from "./common.js";
 
-/** Metadata vocabulary only; phase 5 binds each actual route to operation schemas. */
+export const permissionPolicyNameSchema = z.enum([
+  "public",
+  "public_read",
+  "human",
+  "controller",
+  "scoped_agent",
+  "workspace_owner",
+  "participant",
+  "reviewer",
+  "observer",
+  "admin",
+  "session",
+  "challenge",
+  "scoped_approval_request",
+]);
+
+export type PermissionPolicyName = z.infer<typeof permissionPolicyNameSchema>;
+
+/** Compact descriptor vocabulary; apiRoutes binds actual schemas and policy metadata. */
 export const routeDescriptorSchema = z.strictObject({
   operationId: z.string().regex(/^[a-z][a-zA-Z0-9]{0,119}$/),
   method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
@@ -10,18 +28,7 @@ export const routeDescriptorSchema = z.strictObject({
     .min(1)
     .max(256)
     .regex(/^\/(?:[a-zA-Z0-9_:/.-])*$/),
-  actor: z.enum([
-    "public",
-    "human",
-    "scoped_agent",
-    "controller",
-    "workspace_owner",
-    "participant",
-    "reviewer",
-    "admin",
-    "challenge",
-    "session",
-  ]),
+  actor: permissionPolicyNameSchema,
   representations: z
     .array(z.enum(["json", "binary", "html"]))
     .min(1)

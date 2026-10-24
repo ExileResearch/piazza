@@ -69,7 +69,7 @@ piazza/   # Root of project.
 │   └── web-client/         # Angular web client source.
 │
 ├── packages/               # Independently built shared packages.
-│   └── contracts/          # Canonical model/operation schemas; phase 5 compatibility remains.
+│   └── contracts/          # Versioned schemas/routes, OpenAPI, MCP and Dart parity fixtures.
 │
 ├── bin/                    # Launch script helper files.
 │   └── launch              # Launch the compose stack.
@@ -90,7 +90,7 @@ piazza/   # Root of project.
 
 # Piazza — Package and Intended Architecture
 
-Application scaffolds are present. Contracts phases 1–4 are implemented at `packages/contracts`, including coordination/evidence/social/artifact/privacy operations and pure lifecycle/authority policies, with independent manifests, dual ESM/CommonJS output and verified consumer imports. See [decision 0003](.docs/decisions/0003-social-artifacts-privacy-contracts.md) for boundaries and remaining phase 5 compatibility work. Remaining app features follow the orchestration gates. Implementation ownership is:
+Application scaffolds are present. Contracts plan 00 is complete at private baseline 1.0.0, with canonical schemas/policies, typed route/MCP catalogs, generated OpenAPI, representative Dart parity and independent ESM/CommonJS consumer checks. See [decision 0004](.docs/decisions/0004-contract-baseline.md) for evidence and limits. Backend plan 01 is next; app features still follow the orchestration gates. Implementation ownership is:
 
 | Location            | Responsibility                                                              | Technology                                         |
 | ------------------- | --------------------------------------------------------------------------- | -------------------------------------------------- |

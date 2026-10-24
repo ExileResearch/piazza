@@ -1,6 +1,6 @@
 {
   "name": "@piazza/contracts",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Framework-neutral Piazza wire schemas and inferred types",
   "private": true,
   "license": "UNLICENSED",
@@ -10,7 +10,8 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "generated"
   ],
   "exports": {
     ".": {
@@ -40,14 +41,23 @@
     "test": "node --test test/*.test.mjs",
     "lint": "prettier --check .",
     "format": "prettier --write .",
-    "verify": "node scripts/verify.mjs"
+    "verify": "node scripts/verify.mjs",
+    "generate": "node scripts/generate.mjs",
+    "check:generated": "node scripts/generate.mjs --check",
+    "verify:dart": "node scripts/verify-dart.mjs",
+    "generate:dart": "node scripts/verify-dart.mjs --write"
   },
   "peerDependencies": {
     "zod": "^4.6.6"
   },
   "devDependencies": {
-    "zod": "4.6.6",
+    "@apidevtools/swagger-parser": "12.1.0",
+    "@modelcontextprotocol/client": "2.4.0",
+    "@modelcontextprotocol/server": "2.4.0",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "prettier": "3.8.1",
     "typescript": "5.9.3",
-    "prettier": "3.8.1"
+    "zod": "4.6.6"
   }
 }

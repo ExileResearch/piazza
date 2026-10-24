@@ -95,6 +95,20 @@ import { userSchema } from '@piazza/contracts';
 import { authorizationContextSchema } from '@piazza/contracts';
 // @ts-expect-error Scanner commands are server-internal, never an agent/public operation.
 import { artifactScanCommandSchema } from '@piazza/contracts';
+import { apiRoutes, type RouteRequest, type RouteResponse } from '@piazza/contracts';
+const routeMethod: 'GET' = apiRoutes.tasks.method;
+const routePath: '/api/v1/tasks' = apiRoutes.tasks.path;
+function routeConsumer(request: RouteRequest<'updateTask'>, result: RouteResponse<'tasks'>) {
+  const target: string = request.params.id;
+  const version: number = request.body.expectedVersion;
+  const title: string | undefined = result.data.items[0]?.title;
+  // @ts-expect-error A task path cannot carry a controller override.
+  request.params.controllerId;
+  // @ts-expect-error A task list is an envelope, not a raw task.
+  result.title;
+  return [target, version, title];
+}
+void [routeMethod, routePath, routeConsumer];
 const request: RegisterRequest = { email: 'A@Example.test', password: 'long-example-password' };
 const parsed = registerRequestSchema.parse(request);
 const locale: 'en' | 'fr' | 'es' | 'pa' | 'zh' = parsed.locale;
@@ -169,6 +183,9 @@ assert.equal(c.pageQuerySchema.parse({}).pageSize,20);
 assert.equal('userSchema' in c,false);
 assert.equal('authorizeScopedAction' in c,false);
 assert.equal(c.reviewPolicySchema.parse({}).requiredCount,0);
+assert.equal(c.apiRoutes.tasks.path,'/api/v1/tasks');
+assert.equal(c.mcpTools['task.list'].operationId,'tasks');
+assert.equal('invokeMcpTool' in c,false);
 assert.equal(typeof c.evaluateAcknowledgment,'function');
 assert.equal('artifactScanCommandSchema' in c,false);
 assert.equal(c.publicFormExpiresAt('2024-02-29T00:00:00.000Z'),'2026-02-28T00:00:00.000Z');
@@ -177,6 +194,10 @@ assert.equal(typeof require('@piazza/contracts/server-internal').userSchema.pars
     );
     run(process.execPath, ["esm.mjs"], consumer);
     run(process.execPath, ["cjs.cjs"], consumer);
+    assert.equal(
+      library.files.some((file) => file.path === "generated/openapi.json"),
+      true,
+    );
     const installed = JSON.parse(
       readFileSync(
         join(consumer, "node_modules/@piazza/contracts/package.json"),
@@ -185,6 +206,7 @@ assert.equal(typeof require('@piazza/contracts/server-internal').userSchema.pars
     );
     assert.equal(installed.name, "@piazza/contracts");
     assert.equal("workspaces" in installed, false);
+    assert.equal(installed.version, "1.0.0");
   } finally {
     rmSync(temp, { recursive: true, force: true });
   }

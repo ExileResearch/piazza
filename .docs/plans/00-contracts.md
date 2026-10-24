@@ -2,7 +2,7 @@
 
 **Scope:** packages/contracts and shared interface design; no app feature implementation.
 
-**Starting state:** application scaffolds already exist. The contracts package was absent when this build began. Phases 1–4 are now verified; full route/client/MCP compatibility and baseline freeze remain in phase 5.
+**Starting state:** application scaffolds already exist. The contracts package was absent when this build began. Phases 1–5 are verified at private contracts baseline 1.0.0. Backend implementation may start; live endpoint, OAuth and independent-runtime acceptance remain backend gates.
 
 **Prerequisites:** Resolved package available; close O01–O03 as needed before their contract families freeze.
 
@@ -46,10 +46,10 @@ Read [blueprint](../blueprint.md), [models](../data_models.md), [contracts](../c
 
 ## Phase 5 — Route and client compatibility baseline
 
-- [ ] 5.1 Materialize every route row in ../contracts.md as apiRoutes with exact methods/path/query/header/body/response/status/error schemas; add /health,/ready and development-only OpenAPI metadata.
-- [ ] 5.2 Define bounded events/cursor expiry and MCP tool mappings to domain operations with identical actor/grant rules; no adapter service-role escalation.
-- [ ] 5.3 Document canonical Zod-to-Nest/Swagger metadata generation and establish representative OpenAPI/Dart parity fixtures, including optionality, enums, dates and auth challenges.
-- [ ] 5.4 Run contracts unit/schema tests, route-inventory coverage and imports; freeze a versioned baseline and record how future app owners request cross-app changes.
+- [x] 5.1 Materialize every route row in ../contracts.md as apiRoutes with exact methods/path/query/header/body/response/status/error schemas; add /health,/ready and development-only OpenAPI metadata.
+- [x] 5.2 Define bounded events/cursor expiry and MCP tool mappings to domain operations with identical actor/grant rules; no adapter service-role escalation.
+- [x] 5.3 Document canonical Zod-to-Nest/Swagger metadata generation and establish representative OpenAPI/Dart parity fixtures, including optionality, enums, dates and auth challenges.
+- [x] 5.4 Run contracts unit/schema tests, route-inventory coverage and imports; freeze a versioned baseline and record how future app owners request cross-app changes.
 
 **Exit gate:** All F01–F16/J01–J16 have typed operations and denial/error shapes; no duplicate payload definitions; contracts build/check/tests green. Backend implementation may now start.
 
@@ -92,4 +92,16 @@ Phase 4 complete on `dev`. [Decision 0003](../decisions/0003-social-artifacts-pr
 
 Verification: `npm run verify` passes strict typecheck, ESM/CommonJS builds, 70 tests and formatting. Added fixtures cover all phase 4 request/result/error boundaries, two-operator audience/parent denial, blocked contact, stale wall/scan writes, quarantine and safe delivery headers, allocation batches and repeat usage, bound step-up, admin versus account owner, safe export chunks/expiry, 30-day closure scheduling, leap-day 24-month form retention, duplicate-key/malformed form rejection, five-locale static HTML and no raw secrets in metadata. Independent offline packed consumers check new exports/inferred types in both module systems.
 
-The export-job union initially required a nonempty tuple to typecheck; it retains strict variants and expiry validation. The runtime suite passed on its first full run and after refinements. These are contract/pure-policy fixtures, not evidence of live scanning, SQL pagination isolation, erasure, backup restore, actual job/delivery workers, no-JS browser accessibility or network E2E. No dependency pins or app features were changed. Phase 5 remains unchecked; backend features still wait for complete routes, HTTP/MCP mapping, event/idempotency semantics, OpenAPI/Dart parity and baseline freeze.
+The export-job union initially required a nonempty tuple to typecheck; it retains strict variants and expiry validation. The runtime suite passed on its first full run and after refinements. These are contract/pure-policy fixtures, not evidence of live scanning, SQL pagination isolation, erasure, backup restore, actual job/delivery workers, no-JS browser accessibility or network E2E. No dependency pins or app features were changed. At that checkpoint phase 5 remained unchecked; its completed route, transport and compatibility evidence is recorded below.
+
+## Route and consumer baseline evidence — 2026-10-24
+
+Phase 5 complete on `dev`; plan 00 is closed at private contracts version **1.0.0**. [Decision 0004](../decisions/0004-contract-baseline.md) records compatibility/change rules, derived defaults, official protocol references and exact limits. The package materializes **117 product routes**, **11 protocol/probe/development transports** and **72 MCP tool mappings**. It adds the missing controller/private-party query shapes, reviewable approval intents, signed opaque cursors, reference-only receipt recovery and secret-replay errors. Public/task content projections remain separate from private workflow records.
+
+Verification: Node 24.21.0 / TypeScript 5.9.3 / Zod 4.6.6; `npm run verify` passes strict typecheck, ESM/CommonJS builds, deterministic OpenAPI/tool/Dart-source drift checks, **83 tests** and formatting. Coverage checks every declared inventory row, strict components and F01–F16/J01–J16 metadata; validates OpenAPI 3.1.1 in production/development modes; checks explicit probes, multipart/bytes/form/HTML/OAuth representations; and exercises scoped headers, approval intents, event signatures/expiry/tampering, canonical digest behavior and secret-safe recovery. Independent offline packed consumers verify operation-specific inferred request/response/path types and runtime imports in both module formats.
+
+The official MCP client/server SDK 2.4.0 fixture negotiates the pinned 2026-07-28 revision through injected Fetch, validates actual request/result envelopes and mirrors, rejects a mismatched method header, and invokes the same application-port/pure-policy fixture as HTTP. Revoked, expired, foreign, over-scoped and budget-exhausted actors receive identical denials. Actor injection fails before domain dispatch. Protocol discovery/list responses explicitly disable list-change subscriptions and use private zero-TTL caching. This closes the SDK/serialization contract gate, not deployed OAuth or independent operator runtime acceptance.
+
+Dart 3.13.4; `npm run verify:dart` (with DART_BIN selecting the installed SDK and PUB_CACHE selecting a writable cache) passes locked dependency resolution, Freezed/build_runner regeneration and Dart formatting with no implementation drift, analyzer with no issues and **21 shared fixtures**. Generated Freezed/JSON artifacts are committed. Fixtures include absent versus null/default values, enums, canonical dates, both auth outcome branches, strict unknown fields and JSON round trips. The fixture package is independent of the Flutter scaffold and does not represent a complete mobile client. Input normalization and Zod cross-field refinements remain mandatory server behavior; ordinary JSON Schema cannot infer all of them.
+
+Initial compatibility runs exposed component-local OpenAPI references, Freezed JSON generation detection and SDK legacy-negotiation/listChanged defaults; these were corrected and the complete gates rerun. No app feature, migration, live provider, deployed endpoint, real OAuth token verifier, SQL pagination isolation, persistent receipt/event store, independent runtime, reconnect UI or security/release gate is claimed. Backend plan 01 is next; its checkboxes remain untouched.

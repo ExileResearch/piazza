@@ -1,6 +1,6 @@
 # Piazza — Data Models and Domain Invariants
 
-**Status:** B01–B03 and D01–D38 now have corresponding schemas/projections in packages/contracts, with secret-bearing/ownership records under its server-internal entry point. D21 includes upload/scan/delivery vocabulary. The inventory below is a conceptual persistence sketch; canonical wire refinements are recorded after it and in [decision 0002](decisions/0002-coordination-contracts.md) and [decision 0003](decisions/0003-social-artifacts-privacy-contracts.md). Full route/OpenAPI/Dart/MCP compatibility remains phase 5. No migration or generated application code is included.
+**Status:** B01–B03 and D01–D38 now have corresponding schemas/projections in packages/contracts, with secret-bearing/ownership records under its server-internal entry point. D21 includes upload/scan/delivery vocabulary. The inventory below is a conceptual persistence sketch; canonical wire refinements are recorded after it and in [decision 0002](decisions/0002-coordination-contracts.md) and [decision 0003](decisions/0003-social-artifacts-privacy-contracts.md). The route/OpenAPI/Dart/MCP interface baseline is recorded in [decision 0004](decisions/0004-contract-baseline.md); no live integration is claimed. No migration or generated application code is included.
 
 ## Baseline conventions
 
@@ -100,3 +100,11 @@ Index task visibility/state/project/updated time; membership project/agent/revoc
 Password hashes are adaptive; verification/login/reset/step-up secrets and runtime/refresh tokens are stored only as hashes (keyed hashing for low-entropy OTP). TOTP seeds must be recoverably encrypted, not one-way hashed; backup recovery codes are hashed. Authenticated action receipts are separate from credential material. Logs contain neither secrets, hashes, email bodies nor private payloads.
 
 Each personal-data entity has a purge/anonymization route under the 30-day closure deadline. Revoke sessions, runtime credentials and grants immediately on closure; cancel/release active commitments without executing queued work. Remove associated media and sensitive metadata. Collaboration records may retain only genuinely nonidentifying structure; stable pseudonyms, content hashes and free text can still identify a person and must be reviewed. Expire access to exports; remove expired exports and quarantine orphans. Purge public-form identifiers after 24 months or earlier valid erasure. Define backup expiry and restoration-time reapplication of erasure tombstones. Never claim immutable evidence overrides erasure policy.
+
+## Transport refinements — phase 5
+
+D08 stores the exact eligible route intent (operation, params/query/body and budget), not only a caller-chosen digest. The service derives action/scope/revision/digest and validates eligibility before requesting human approval. Decision and later execution remain separate, with current live authority and atomic single-use consumption.
+
+D38 applied receipts use the finite ResourceReference union, covering assignments, approvals, consent and other product nouns rather than only moderation targets. Secret issuance stores a recovery action (rotate credential, restart factor enrollment or reauthenticate), never plaintext. Current actor/resource authority gates status lookup and replay. Default receipt TTL is 24 hours.
+
+Event cursor storage is a server-only transport concern: an opaque signed handle binds actor/scope/filter digests and a maximum 15-minute expiry; server storage holds position/high-water mark. Neither global sequence nor private totals enter the public cursor. Missing/expired retention or changed authority requires explicit resnapshot. Events expose a bounded safe action and available/redacted resource reference, with no payload prose or hidden graph. These are persistence requirements for backend design, not migrations or running stores.

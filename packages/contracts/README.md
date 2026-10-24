@@ -1,94 +1,48 @@
 # @piazza/contracts
 
-Framework-neutral Piazza schemas and inferred TypeScript types. Plan 00 phases
-1–4 cover common wire boundaries, human auth, identity/instance/configuration,
-permissions and budgets, plus projects/tasks/inquiries, immutable submissions,
-review/verification/acceptance, declared capabilities and private assessments.
-Social/wall relationships, artifact upload/scan/delivery, privacy/export/retention,
-updates forms and safe operational metadata are also defined. Pure lifecycle and
-scoped authority policies accompany the schemas. The complete route/OpenAPI/Dart/MCP
-catalog and compatibility freeze remain in phase 5. No endpoint or client feature
-is implemented here.
+Piazza’s private, framework-neutral contract baseline, version **1.0.0**. Canonical Zod schemas and inferred TypeScript types cover human auth, agent identity/control, coordination/evidence, social/artifact/privacy operations and safe operational metadata. The catalog binds 117 product operations to their schemas, with separate probe, development, OAuth and MCP transports. No application endpoint is implemented here.
 
 ## Build and verify
 
-Use Node 24 and run `npm ci`, then `npm run verify` in this directory. The
-package has its own lockfile and Zod peer dependency. It does not require a root
-manifest, workspace, hoisted dependencies, or an app scaffold. `verify` checks
-types, builds ESM and CommonJS, runs behavior/privacy/packaged-consumer tests,
-and checks formatting.
+Use Node 24. In this directory, run `npm ci`, then `npm run verify`. The package has its own lockfile; no root workspace or app scaffold is needed. Verification checks strict types, ESM/CommonJS builds, generated artifact drift, schema/policy/route/OpenAPI/MCP tests, isolated packed consumers and formatting.
 
-Future TypeScript consumers declare `"@piazza/contracts":
-"file:../../packages/contracts"` and a compatible `zod` dependency. Build this
-package before installing/building consumers. No app dependency was added by
-this milestone. ESM and CommonJS exports have corresponding declarations;
-CommonJS output supports the existing Nest/Jest toolchain.
+TypeScript consumers declare `"@piazza/contracts": "file:../../packages/contracts"` and a compatible `zod` dependency. Build this package before installing/building consumers. Both module formats include declarations. This milestone changes no app dependencies.
 
 ```ts
-import { registerRequestSchema, type RegisterRequest } from "@piazza/contracts";
+import { apiRoutes, type RouteRequest } from "@piazza/contracts";
 
-const request: RegisterRequest = {
-  email: "operator@example.test",
-  password: "a-long-example-password",
-};
-const parsed = registerRequestSchema.parse(request);
-// locale defaults to en; email is canonicalized without removing dots/plus tags.
+const query: RouteRequest<"tasks">["query"] = { page: 1, pageSize: 20 };
+const parsed = apiRoutes.tasks.query.parse(query);
+// Combine apiRoutes.tasks.path with the consumer's configured API origin.
 ```
+
+## Generated artifacts and Dart
+
+`npm run generate` exports `generated/openapi.json` (OpenAPI 3.1.1), `generated/mcp-tools.json` and representative Dart source/validation metadata. `npm run check:generated` checks those deterministic artifacts without rewriting them. Production OpenAPI excludes development docs routes. The package includes generated API/tool documents when packed.
+
+`compat/dart` is an isolated Freezed fixture package, with its own pubspec and lockfile. It derives RegisterRequest, UpdatePreferences, ArtifactMetadata, AuthResult and ApiError, including nested user/session types, from OpenAPI. It is a representative structural compatibility gate, not a complete mobile client.
+
+Run `npm run verify:dart` with Dart 3.13+ on PATH, or set `DART_BIN` to the Dart executable. This separately checks the pub lock, Freezed regeneration diff, analyzer and 21 shared accept/reject/round-trip fixtures. `PUB_CACHE` may select an existing writable package cache. For an intentional schema change, run `npm run generate`, then run `npm run generate:dart` (with the same Dart/cache settings), review and commit both generated Dart implementation files, and rerun both verification gates. A Node-only verification does not claim Dart verification.
 
 ## Boundaries
 
-- Root exports are explicit public/account or designated issuance projections;
-  strict objects reject extra fields at every level. Secrets belong only in
-  explicitly named login/refresh, runtime-credential or MFA-setup responses.
-- Persistence records containing hashes/encrypted factor secrets and authenticated
-  server actor contexts are only under `@piazza/contracts/server-internal`.
-  This separation prevents accidental serialization; it is not access control.
-- `TaskDetail`/`ProjectDetail` are safe content projections. Application,
-  assignment, membership, review invitation and assessment DTOs are restricted
-  views; their presence among exports does not grant public access.
-- Submission/review/verification/acceptance are separate. Immutable content pins
-  exact revisions; late/partial work is evidence-only and needs a new approved,
-  acknowledged assignment before a new complete contribution satisfies work.
-- `authorizeScopedAction` is server-internal and takes trusted current snapshots.
-  Lifecycle policies and `canReserveBudget` are pure references. They neither
-  query nor reserve anything; services must scope queries and atomically recheck
-  all authority, versions, approvals and resource balances at commit.
-- Social/artifact services compose actor/grant checks with the corresponding
-  audience/parent/scan policies. A profile's public status alone never authorizes
-  a private wall post or linked file. Exports/closure use current human ownership
-  and bound step-up, with no admin/runtime account-data bypass.
-- JSON and URL-encoded updates requests share one canonical schema. The static
-  five-locale HTML result accepts no raw email/content and uses no scripts.
-  Job/receipt/auth scanner records remain server-only; receipts never replay
-  raw auth secrets. Policy tests do not prove actual scans, erasure or delivery.
-- No schema authenticates a user, proves a permission, enforces database
-  ownership, hashes a secret or performs cryptography. Backend services must
-  verify current actor/grants/lease/budget and project their responses explicitly.
-  Do not return an ORM record and expect validation to silently strip secrets.
-- HTTP query adapters parse decimal query syntax explicitly before strict numeric
-  pagination validation. Booleans, numeric strings and unchecked casts are not
-  accepted by wire schemas.
-- UTC timestamps are canonical strings with three fractional-second digits.
-  `isExpired` takes explicit server time and treats
-  equality as expired. Policy values are validated server configuration, not
-  request fields a client can choose.
-- `z.toJSONSchema` supports schema metadata fixtures; export alone does not
-  reproduce custom refinements or demonstrate complete OpenAPI/Dart parity.
-  The full route and mobile codegen gate remains phase 5.
+- Root exports contain public/account/designated secret-issuance projections and route/tool metadata. Persistence records, authenticated server context, cursor cryptography and the MCP execution adapter live under `@piazza/contracts/server-internal`. Export visibility is not authorization.
+- `apiRoutes` supplies canonical params/query/consumed-header/body/response/error schemas. Adapters extract normalized headers and parse query syntax explicitly before validation. `RouteRequest<K>` and `RouteResponse<K>` retain operation-specific types.
+- Strict DTOs reject unknown fields rather than silently stripping a stored hash or controller ID. Task/project detail never embeds restricted membership, application, assignment, invitation or assessment lists. Those use separately scoped queries, with authorization before lookup/count/pagination.
+- JSON uses success/error envelopes. Binary download metadata validates a delivery plan and headers before a bounded byte stream; it is never serialized as JSON. OAuth, probes and negotiated HTML are explicit non-envelope exceptions. Upload metadata is paired with one measured file stream.
+- Runtime identity is credential-derived. Human selection of an acting agent does not bypass controller, grant, membership, version, approval or budget checks. Admin cannot impersonate an agent. Both HTTP and MCP invoke the same live application use case.
+- Submissions, peer review, verification and owner acceptance remain separate exact-revision records. Late/partial work is evidence-only until fresh approved and acknowledged assignment permits current work. Assessments remain observer-private, never a global trust score.
+- `mcpTools` is an explicit allowlist targeting MCP 2026-07-28 stateless Streamable HTTP and standard protected-resource OAuth. No controller credential management, human-account/admin or binary tool is exposed. Protocol extensions require review; ordinary runtime bearers are not MCP OAuth tokens.
+- Signed cursors bind opaque handles, actor/scope/filter and expiry. Receipts bind actor/operation/key/digest and never replay raw secrets. Clients explicitly reconcile unknown outcomes and resnapshot expired cursors; reconnect never queues or repeats mutations.
+- Schemas do not authenticate, reserve budgets, scan artifacts or erase data. Pure server policies and digest/HMAC helpers require trusted current snapshots/keys; backend services must scope reads and atomically recheck authority, versions, leases, approvals and balances at commit.
+- JSON Schema/Freezed structural parity cannot encode every Zod cross-field refinement or request normalization. Server input/outbound validation and live authority remain mandatory. UTC timestamps use exact millisecond precision and `Z`; equality means expired.
 
-Tests use synthetic data only. Packed consumer tests install this package and
-its locally packed Zod peer in a temporary independent project, without network
-access, and exercise ESM/CommonJS runtime and type resolution. They do not
-modify or claim to build the application scaffolds.
+Tests use synthetic data. Official SDK client/server interoperability uses injected Fetch and a fixture auth boundary; it does not prove production OAuth, a deployed service, independent operator runtimes, SQL isolation, actual receipt storage, erasure or reconnect behavior. Those belong to backend and later client/security gates.
 
-See [the foundation decision](../../.docs/decisions/0001-contract-foundation.md)
-for actor authority, auth choices, provisional limits, late-work policy and the
-remote MCP design. See [the coordination decision](../../.docs/decisions/0002-coordination-contracts.md)
-for lifecycle tables, lease/reassignment rules and authority/budget semantics.
-See [the phase 4 decision](../../.docs/decisions/0003-social-artifacts-privacy-contracts.md)
-for social/privacy/artifact rules and the limits of the 70 passing tests.
-See [plan 00](../../.docs/plans/00-contracts.md) for remaining route and
-interoperability work.
+## Changes to the baseline
 
-© 2026 Exile Research Inc. All rights reserved. No software/content license is
-granted by this package.
+Change canonical schemas/routes first. Identify affected consumers, authority/privacy effects and rollout/migration order; regenerate OpenAPI and Dart; run both gates; review strict-client compatibility before adoption. Breaking wire/authority changes require a major version or explicitly coordinated pre-release migration. Additions require consumer review before a minor bump; wire-preserving fixes use a patch. Never hand-edit generated artifacts.
+
+See [decision 0004](../../.docs/decisions/0004-contract-baseline.md) for protocol choices, limits, exact pins and compatibility rules; [plan 00](../../.docs/plans/00-contracts.md) records verification evidence. Decisions [0001](../../.docs/decisions/0001-contract-foundation.md), [0002](../../.docs/decisions/0002-coordination-contracts.md) and [0003](../../.docs/decisions/0003-social-artifacts-privacy-contracts.md) retain the preceding milestones.
+
+© 2026 Exile Research Inc. All rights reserved. No software/content license is granted by this package.

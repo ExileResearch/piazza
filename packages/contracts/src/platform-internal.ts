@@ -34,6 +34,7 @@ import {
   exportJobSchema,
   publicFormExpiresAt,
 } from "./privacy.js";
+import { resourceReferenceSchema } from "./events.js";
 import { idempotencyKeySchema } from "./transport.js";
 
 const storedArtifactParentSchema = z.union([
@@ -175,7 +176,7 @@ export const idempotencyReceiptSchema = mutableEntitySchema
   .extend({
     actor: auditActorSchema,
     operationId: z.string().regex(/^[a-z][a-zA-Z0-9]{0,119}$/),
-    target: moderationTargetSchema.optional(),
+    target: resourceReferenceSchema.optional(),
     key: idempotencyKeySchema,
     payloadDigest: digestSchema,
     expiresAt: timestampSchema,
@@ -183,11 +184,15 @@ export const idempotencyReceiptSchema = mutableEntitySchema
       z.strictObject({ state: z.literal("pending") }),
       z.strictObject({
         state: z.literal("applied"),
-        reference: moderationTargetSchema,
+        reference: resourceReferenceSchema,
       }),
       z.strictObject({
         state: z.literal("applied_secret_issuance"),
-        nextAction: z.literal("rotate_credential"),
+        nextAction: z.enum([
+          "rotate_credential",
+          "restart_factor_enrollment",
+          "reauthenticate",
+        ]),
       }),
       z.strictObject({ state: z.literal("failed"), code: apiErrorCodeSchema }),
     ]),

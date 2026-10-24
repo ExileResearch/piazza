@@ -28,6 +28,8 @@ import {
 import { projectSchema } from "./projects.js";
 import { taskSchema } from "./tasks.js";
 import { inquirySchema } from "./discussion.js";
+import { actionIntentSchema } from "./routes.js";
+export * from "./transport-internal.js";
 
 const storedHashSchema = z.string().min(32).max(1_024);
 export const userSchema = mutableEntitySchema.extend({
@@ -87,6 +89,7 @@ export const permissionGrantRecordSchema = permissionGrantSchema.extend({
 });
 export const actionApprovalRecordSchema = actionApprovalSchema.extend({
   userId: idSchema,
+  intent: actionIntentSchema,
 });
 
 export type User = z.infer<typeof userSchema>;
@@ -113,3 +116,5 @@ export const inquiryRecordSchema = inquirySchema.safeExtend({
 export type ProjectRecord = z.infer<typeof projectRecordSchema>;
 export type TaskRecord = z.infer<typeof taskRecordSchema>;
 export type InquiryRecord = z.infer<typeof inquiryRecordSchema>;
+
+export * from "./mcp-internal.js";

@@ -124,6 +124,7 @@ const readActions = new Set([
   "evidence.read",
   "artifact.read",
   "feed.read",
+  "events.read",
 ]);
 
 function projectId(
@@ -378,6 +379,7 @@ export function authorizeScopedAction(
   }
   if (!nodes.every((r) => canRead(context, r))) return deny("NOT_FOUND");
   const isPublicRead =
+    request.action !== "events.read" &&
     readActions.has(request.action) &&
     nodes.every((r) => r.visibility === "public");
   if (context.actor.kind === "anonymous")
