@@ -1,0 +1,21 @@
+# VSCodeCounter files
+.VSCodeCounter
+
+# System files
+**/.DS_Store
+**/node_modules
+**/build
+**/dist
+
+# Secrets
+.env
+.env.*
+!.env
+!.env.*
+.*.env.*
+**/.env
+**/.env.*
+
+# Planning & brainstorming documents
+.docs/notes/
+.docs/staas/
