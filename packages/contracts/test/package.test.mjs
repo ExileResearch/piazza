@@ -86,11 +86,13 @@ test("packed file dependencies resolve runtime and inferred types in isolated ES
       consumer,
     );
     const fixture = `
-import { registerRequestSchema } from '@piazza/contracts';
-import type { RegisterRequest, CurrentUser } from '@piazza/contracts';
-import { authTokenSchema } from '@piazza/contracts/server-internal';
+import { registerRequestSchema, submitWorkSchema, evaluateAcceptance } from '@piazza/contracts';
+import type { RegisterRequest, CurrentUser, SubmitWork, Submission, Task } from '@piazza/contracts';
+import { authTokenSchema, authorizeScopedAction } from '@piazza/contracts/server-internal';
 // @ts-expect-error Persistence schemas are intentionally not root exports.
 import { userSchema } from '@piazza/contracts';
+// @ts-expect-error Trusted authorization contexts are server-internal only.
+import { authorizationContextSchema } from '@piazza/contracts';
 const request: RegisterRequest = { email: 'A@Example.test', password: 'long-example-password' };
 const parsed = registerRequestSchema.parse(request);
 const locale: 'en' | 'fr' | 'es' | 'pa' | 'zh' = parsed.locale;
@@ -98,7 +100,18 @@ function safeUser(user: CurrentUser) {
   // @ts-expect-error A current-user DTO has no stored password hash.
   return user.passwordHash;
 }
-void [locale, safeUser, authTokenSchema, userSchema];
+function work(request: SubmitWork, submission: Submission, task: Task) {
+  const parsed = submitWorkSchema.parse(request);
+  const packetRevision: number = parsed.packetRevision;
+  // @ts-expect-error A submission contains no canonical acceptance or trust score.
+  const score = submission.trustScore;
+  const decision = evaluateAcceptance(task, submission, [], {
+    expectedVersion: task.version, submission: { id: submission.id, revision: submission.revision },
+    decision: 'accept', rationale: 'Matches task criteria'
+  });
+  return [packetRevision, score, decision];
+}
+void [locale, safeUser, authTokenSchema, userSchema, authorizationContextSchema, work, authorizeScopedAction];
 `;
     for (const extension of ["mts", "cts"]) {
       const file = `types.${extension}`;
@@ -126,8 +139,12 @@ void [locale, safeUser, authTokenSchema, userSchema];
       join(consumer, "esm.mjs"),
       `
 import assert from 'node:assert/strict';
-import { registerRequestSchema } from '@piazza/contracts';
+import { registerRequestSchema, reviewPolicySchema, canReserveBudget } from '@piazza/contracts';
+import { authorizeScopedAction } from '@piazza/contracts/server-internal';
 assert.equal(registerRequestSchema.parse({email:'A@Example.test',password:'long-example-password'}).email,'a@example.test');
+assert.equal(reviewPolicySchema.parse({}).requiredCount,0);
+assert.equal(canReserveBudget({unit:'requests',hardLimit:10,reserved:5,consumed:4},2),false);
+assert.equal(typeof authorizeScopedAction,'function');
 `,
     );
     writeFileSync(
@@ -137,6 +154,9 @@ const assert = require('node:assert/strict');
 const c = require('@piazza/contracts');
 assert.equal(c.pageQuerySchema.parse({}).pageSize,20);
 assert.equal('userSchema' in c,false);
+assert.equal('authorizeScopedAction' in c,false);
+assert.equal(c.reviewPolicySchema.parse({}).requiredCount,0);
+assert.equal(typeof c.evaluateAcknowledgment,'function');
 assert.equal(typeof require('@piazza/contracts/server-internal').userSchema.parse,'function');
 `,
     );

@@ -4,7 +4,7 @@ The specification package is now in implementation. Existing app scaffolds are r
 
 ## Current implementation status — 2026-10-24
 
-Plan 00 phases 1–2 are complete: independently locked/built contracts, common/auth/agent/permission projections, internal record separation and verified ESM/CommonJS consumption. The [foundation decision](.docs/decisions/0001-contract-foundation.md) records authority/auth choices and the owner-confirmed late/partial evidence policy. Plan 00 phases 3–5 remain; the backend contract gate is not closed. The earlier generation report is historical and does not describe these new implementation checks.
+Plan 00 phases 1–3 are complete: independently locked/built contracts, auth/identity/permission projections, coordination/evidence operations, lifecycle tables, pure authority/budget policies and verified ESM/CommonJS consumption. The [foundation decision](.docs/decisions/0001-contract-foundation.md) records authority/auth choices; the [coordination decision](.docs/decisions/0002-coordination-contracts.md) details the implemented late/partial evidence policy, review/acceptance separation and authority boundaries. Typecheck, dual builds, 49 tests and formatting pass. Phases 4–5 remain; the backend contract gate is not closed. The earlier generation report is historical and does not describe these implementation checks.
 
 ## Required work sequence
 
@@ -117,6 +117,9 @@ Open choices block their dependent implementation/release steps, not unrelated s
 | A58 | Auth TTL/attempt/password/TOTP/recovery defaults | O01/O02 implementation baseline | Reversible validated server defaults, not client-selected values or legal/security certification. |
 | A59 | ESM and CommonJS declarations/runtime; Node 24, TS 5.9.3, Zod 4.6.6 | Existing Nest/Jest and independent client needs | Tested packed consumers without root hoisting; pins documented in package lock. |
 | A60 | Remote MCP requires standard protected-resource authorization beyond original product routes | Official 2026-07-28 specification review | Discovery/PKCE/token/revocation contracts must be added at phase 5; no passthrough of arbitrary HTTP runtime credentials. |
+| A61 | Exact packet/revision/decision links, safe content-only detail DTOs and explicit upsert preconditions | Phase 3 coordination implementation | Party records remain restricted; canonical schemas and [decision 0002](.docs/decisions/0002-coordination-contracts.md) refine the original field sketches. |
+| A62 | Completed distinct non-author reviews count regardless of conclusion; default 0, maximum 10 | Optional review plus separate owner acceptance | Derived pilot bound; operator independence remains a declaration. Acceptance never derives from verification outcome. |
+| A63 | Evidence-only contribution requires a new approved/acknowledged assignment before satisfying current work | Owner-approved late/partial rule | Retain immutable evidence, bind renewed complete submission to current packet; no revival of an expired assignment. |
 
 ## Package validation versus implementation evidence
 

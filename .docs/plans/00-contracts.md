@@ -2,7 +2,7 @@
 
 **Scope:** packages/contracts and shared interface design; no app feature implementation.
 
-**Starting state:** application scaffolds already exist. The contracts package was absent when this build began. This milestone implements the foundation only; later contract families are not yet frozen.
+**Starting state:** application scaffolds already exist. The contracts package was absent when this build began. Phases 1–3 are now verified; social/privacy/artifact operations and route/client compatibility remain unfrozen in phases 4–5.
 
 **Prerequisites:** Resolved package available; close O01–O03 as needed before their contract families freeze.
 
@@ -28,10 +28,10 @@ Read [blueprint](../blueprint.md), [models](../data_models.md), [contracts](../c
 
 ## Phase 3 — Coordination and evidence schemas
 
-- [ ] 3.1 Define all D09–D24 entities and operation schemas: projects/membership, packets/tasks/applications/assignments, immutable submissions, review, verification, decisions, inquiry/answer/thread, capability and assessments.
-- [ ] 3.2 Publish complete task/assignment/review enums and transition tables; pin packet/submit revisions, acknowledgment/lease limits, exact owner acceptance and review-count requirements.
-- [ ] 3.3 Define budget reservation/usage provenance, approval payload digest, controller/grant intersection and scoped actor types. No universal trust vector or auto-assign command.
-- [ ] 3.4 Add two-operator fixtures for public/member/controller/admin projections, stale requests, expired lease, optional review and accepted-but-failed verification.
+- [x] 3.1 Define all D09–D24 entities and operation schemas: projects/membership, packets/tasks/applications/assignments, immutable submissions, review, verification, decisions, inquiry/answer/thread, capability and assessments.
+- [x] 3.2 Publish complete task/assignment/review enums and transition tables; pin packet/submit revisions, acknowledgment/lease limits, exact owner acceptance and review-count requirements.
+- [x] 3.3 Define budget reservation/usage provenance, approval payload digest, controller/grant intersection and scoped actor types. No universal trust vector or auto-assign command.
+- [x] 3.4 Add two-operator fixtures for public/member/controller/admin projections, stale requests, expired lease, optional review and accepted-but-failed verification.
 
 **Exit gate:** Every coordination journey has request/result/error fixtures and state denial cases; all model references/enums resolve without framework imports.
 
@@ -76,4 +76,12 @@ Phases 1–2 complete on `dev`. The [foundation decision](../decisions/0001-cont
 
 Verification: Node 24.21.0, TypeScript 5.9.3, Zod 4.6.6; `npm run verify` runs typecheck, both builds, 25 passing tests and formatting checks. Tests cover normalization/expiry, privilege and secret-field rejection, MFA/session distinction, grant caps, response metadata and an independently packed local-file consumer with ESM/CommonJS runtime and strict type resolution. Consumer tests run offline and do not depend on root hoisting or app modifications.
 
-No full task lifecycle fixture chain, network E2E, database migration, provider integration, OpenAPI route catalog or Dart client is claimed here. Phases 3–5 remain unchecked; backend feature work waits for their contract baseline. Next: phase 3 coordination/evidence schemas and immutable revision/state semantics.
+At that foundation checkpoint, no full task lifecycle fixture chain, network E2E, database migration, provider integration, OpenAPI route catalog or Dart client was claimed. Phase 3 is now recorded separately below; backend feature work still waits for phases 4–5.
+
+## Coordination milestone evidence — 2026-10-24
+
+Phase 3 complete on `dev`. [Decision 0002](../decisions/0002-coordination-contracts.md) records implemented D09–D24 projections/operations, legal lifecycle edges, exact immutable revisions, acknowledgment and bounded lease/renewal, evidence-only late/partial work with renewed assignments, independent verification/acceptance, review counts, private assessments, declared capabilities and scoped authority/budget checks. D21 metadata is available; full artifact lifecycle remains phase 4.
+
+Verification: `npm run verify` passes strict typecheck, ESM/CommonJS builds, 49 tests and formatting. Each phase 3 operation has request/result/error-envelope fixtures and unknown-field denial. Two-controller policy scenarios cover role/parent access, stale versions, revocation facts, budgets, single-grant scope intersection, exact approval digest/revision, reviewer/owner separation and reassignment after evidence-only work. Packaged offline consumers verify the new runtime exports/inferred types in both module systems without app hoisting.
+
+The first test runs exposed shared mutable fixtures and an invalid additive-admin role fixture; both were corrected and the full suite rerun. No live service was used. Pure policies require trusted repository snapshots and atomic service enforcement: these tests do not prove real SQL prefilters, concurrency/idempotency, cryptographic authentication, artifact access, network E2E, MCP, OpenAPI or Dart parity. No application feature code changed. Phases 4–5 remain unchecked; next is phase 4 social/artifact/privacy/operational contracts.

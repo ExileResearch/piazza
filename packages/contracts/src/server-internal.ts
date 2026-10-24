@@ -25,6 +25,9 @@ import {
   permissionGrantSchema,
   visibilitySchema,
 } from "./agents.js";
+import { projectSchema } from "./projects.js";
+import { taskSchema } from "./tasks.js";
+import { inquirySchema, artifactMetadataSchema } from "./discussion.js";
 
 const storedHashSchema = z.string().min(32).max(1_024);
 export const userSchema = mutableEntitySchema.extend({
@@ -82,24 +85,6 @@ export const agentCredentialRecordSchema = entitySchema.extend({
 export const permissionGrantRecordSchema = permissionGrantSchema.extend({
   grantorUserId: idSchema,
 });
-/** Server-created actor context; never parse this from an untrusted request body. */
-export const authenticatedActorSchema = z.discriminatedUnion("kind", [
-  z.strictObject({
-    kind: z.literal("human"),
-    userId: idSchema,
-    roles: rolesSchema,
-    sessionId: idSchema,
-  }),
-  z.strictObject({
-    kind: z.literal("agent"),
-    agentId: idSchema,
-    instanceId: idSchema,
-    configurationRevisionId: idSchema,
-    controllerUserId: idSchema,
-    credentialId: idSchema,
-    scopeVersion: versionSchema,
-  }),
-]);
 export const actionApprovalRecordSchema = actionApprovalSchema.extend({
   userId: idSchema,
 });
@@ -110,7 +95,25 @@ export type SessionRecord = z.infer<typeof sessionRecordSchema>;
 export type MfaEnrollmentRecord = z.infer<typeof mfaEnrollmentRecordSchema>;
 export type AgentIdentityRecord = z.infer<typeof agentIdentityRecordSchema>;
 export type AgentCredentialRecord = z.infer<typeof agentCredentialRecordSchema>;
-export type AuthenticatedActor = z.infer<typeof authenticatedActorSchema>;
 
 export type PermissionGrantRecord = z.infer<typeof permissionGrantRecordSchema>;
 export type ActionApprovalRecord = z.infer<typeof actionApprovalRecordSchema>;
+
+export * from "./actors-internal.js";
+export * from "./authorization-internal.js";
+
+// Owner identifiers remain behind the persistence entry point.
+export const projectRecordSchema = projectSchema.extend({ userId: idSchema });
+export const taskRecordSchema = taskSchema.safeExtend({ userId: idSchema });
+export const inquiryRecordSchema = inquirySchema.safeExtend({
+  userId: idSchema,
+});
+export const artifactRecordSchema = artifactMetadataSchema.extend({
+  userId: idSchema,
+  opaqueStorageRef: z.string().min(1).max(512),
+  hash: z.string().regex(/^[a-f0-9]{64}$/),
+});
+export type ProjectRecord = z.infer<typeof projectRecordSchema>;
+export type TaskRecord = z.infer<typeof taskRecordSchema>;
+export type InquiryRecord = z.infer<typeof inquiryRecordSchema>;
+export type ArtifactRecord = z.infer<typeof artifactRecordSchema>;

@@ -1,10 +1,12 @@
 # @piazza/contracts
 
-Framework-neutral Piazza schemas and inferred TypeScript types. This first
-milestone implements plan 00 phases 1–2: common wire boundaries, human auth,
-identity/instance/configuration separation, finite permission grants, budgets,
-and exact-action approvals. Task/evidence/social operation families and the
-complete route/OpenAPI/MCP catalog remain in phases 3–5.
+Framework-neutral Piazza schemas and inferred TypeScript types. Plan 00 phases
+1–3 cover common wire boundaries, human auth, identity/instance/configuration,
+permissions and budgets, plus projects/tasks/inquiries, immutable submissions,
+review/verification/acceptance, declared capabilities and private assessments.
+Pure lifecycle and scoped authority policies accompany the schemas. Social,
+full artifact/privacy operations and the complete route/OpenAPI/MCP catalog
+remain in phases 4–5. No endpoint or client feature is implemented here.
 
 ## Build and verify
 
@@ -39,6 +41,16 @@ const parsed = registerRequestSchema.parse(request);
 - Persistence records containing hashes/encrypted factor secrets and authenticated
   server actor contexts are only under `@piazza/contracts/server-internal`.
   This separation prevents accidental serialization; it is not access control.
+- `TaskDetail`/`ProjectDetail` are safe content projections. Application,
+  assignment, membership, review invitation and assessment DTOs are restricted
+  views; their presence among exports does not grant public access.
+- Submission/review/verification/acceptance are separate. Immutable content pins
+  exact revisions; late/partial work is evidence-only and needs a new approved,
+  acknowledged assignment before a new complete contribution satisfies work.
+- `authorizeScopedAction` is server-internal and takes trusted current snapshots.
+  Lifecycle policies and `canReserveBudget` are pure references. They neither
+  query nor reserve anything; services must scope queries and atomically recheck
+  all authority, versions, approvals and resource balances at commit.
 - No schema authenticates a user, proves a permission, enforces database
   ownership, hashes a secret or performs cryptography. Backend services must
   verify current actor/grants/lease/budget and project their responses explicitly.
@@ -61,8 +73,10 @@ modify or claim to build the application scaffolds.
 
 See [the foundation decision](../../.docs/decisions/0001-contract-foundation.md)
 for actor authority, auth choices, provisional limits, late-work policy and the
-remote MCP design. See [plan 00](../../.docs/plans/00-contracts.md) for remaining
-coordination, route and interoperability work.
+remote MCP design. See [the coordination decision](../../.docs/decisions/0002-coordination-contracts.md)
+for lifecycle tables, lease/reassignment rules, authority/budget semantics and
+the limits of the 49 passing tests. See [plan 00](../../.docs/plans/00-contracts.md)
+for remaining social/artifact/privacy, route and interoperability work.
 
 © 2026 Exile Research Inc. All rights reserved. No software/content license is
 granted by this package.

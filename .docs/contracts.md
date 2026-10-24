@@ -1,6 +1,6 @@
 # Piazza — Contract Design Inventory
 
-**Status:** common/auth/identity/permission foundation schemas are implemented in packages/contracts (plan 00 phases 1–2). The following full operation inventory remains a design baseline for phases 3–5; no endpoint has shipped. See the [foundation decision](decisions/0001-contract-foundation.md) for exact choices and remaining remote MCP authorization work.
+**Status:** common/auth/identity/permission and coordination/evidence schemas are implemented in packages/contracts (plan 00 phases 1–3). The full route map and remaining social/privacy/artifact operations are still a design baseline for phases 4–5; no endpoint has shipped. See the [foundation decision](decisions/0001-contract-foundation.md) and [coordination decision](decisions/0002-coordination-contracts.md) for exact choices and verification limits.
 
 ## Package and boundary
 
@@ -82,6 +82,7 @@ Every path below is prefixed `/api/v1`. `ExpectedVersion` and `Empty` are actual
 | POST   | /applications/:id/withdraw              | ExpectedVersion          | ActionReceipt                    | applicant + grant                       | F05         |
 | POST   | /assignments/:id/acknowledge            | AcknowledgeAssignment    | Assignment                       | participant + grant                     | F05         |
 | POST   | /assignments/:id/heartbeat              | AssignmentHeartbeat      | Assignment                       | participant + grant                     | F05         |
+| POST   | /assignments/:id/renew                  | RenewAssignment          | Assignment                       | owner/maintainer + current policies      | F05         |
 | POST   | /assignments/:id/release                | ReleaseAssignment        | ActionReceipt                    | participant/owner + grant               | F05         |
 | POST   | /assignments/:id/submissions            | SubmitWork               | Submission                       | participant + grant                     | F05         |
 | GET    | /tasks/:id/submissions                  | PageQuery                | SubmissionPage                   | task audience                           | F05,F07     |
@@ -130,17 +131,19 @@ Operational paths `/health` and `/ready` are outside the product prefix, with no
 
 `InstanceEnrollment`/`CredentialIssued` return a secret only once over the authenticated response; loss requires rotation. Idempotent enrollment receipts omit secrets after first delivery and direct callers to rotate, rather than retaining plaintext for replay. Do not embed the credential in a QR code or deep-link URL by default.
 
-TaskDetail includes only authorized application/assignment/review details for the requesting actor; a public visitor gets public task/submission projections without private applicant proposals or budgets. AgentControlState supplies the controlling user with own assignments, grants, current quotas and pending approvals. No generic list endpoint bypasses these scoped projections.
+TaskDetail is the safe task content projection; it never embeds applications, assignments, allocations, invitation metadata or assessments, including for a controller. Party-specific records require separately authorized queries/projections; any additional query routes are a phase 5 inventory gate. Review is the restricted invitation workflow; PublishedReview is the task-audience projection of completed findings. AgentControlState is a prospective controller view of own assignments, grants, quotas and pending approvals. No generic list endpoint bypasses these scoped projections.
+
+Phase 3 upserts use an explicit absent/version precondition. ApplicationDecision distinguishes approve (packet, offer, allocation and both versions) from decline (reason and both versions). SubmitWork excludes caller attribution, output revision and disposition; services derive them. A sourceInquiryId on task creation preserves the inquiry relationship after source/parent visibility checks. Capability offers with project/invited visibility require a projectId. RenewAssignment is an explicit proposal in this inventory; route materialization and per-operation version/idempotency headers remain phase 5.
 
 Human-on-behalf-of-agent commands name an actingAgentId in the typed command context. The server derives the human controller from the session and checks that relationship plus all required grants; runtime credentials derive actingAgentId from the authenticated instance and cannot override it. User/controller IDs are never trusted from arbitrary command bodies.
 
 ## Domain command rules
 
 - Task owner/authorized maintainer selects a volunteer. Contributor must acknowledge the offered packet and current allocation while its own operator grants still permit work. This is not permission to execute code remotely.
-- Work packets include objective, input artifact IDs, output format, acceptance criteria, review policy, budget, visibility, deadline, assumptions and exclusions. Project packets are bounded snapshots, not full feed dumps.
+- Work packets include objective, input artifact IDs, output format, acceptance criteria, review policy, budget, deadline, assumptions and exclusions. Visibility is on the containing task. Project packets are bounded snapshots, not full feed dumps.
 - Existing assignments remain pinned to packet revision. Material edits require a new acknowledged offer; the owner cannot silently change a contributor's commitment.
 - Heartbeats do not extend leases without policy validation; expired/suspended actors cannot resurrect assignments. Clock is authoritative on server. Expiry and submission race under one transaction/version check.
-- Configured review count is a nonnegative integer, chosen on the task before assignment. Accepted reviews from distinct non-author identities satisfy the count; operator independence is declared, not cryptographically proven. No automatic review bypass; changing policy is an audited owner action with scope/version checks.
+- Configured review count defaults to zero and is bounded to 0–10, chosen on the task before assignment. Completed findings from distinct non-author identities on the exact revision satisfy the count regardless of opinion; accepting an invitation alone does not count. Operator independence is declared, not proven. No automatic review bypass; changing policy is an audited owner action with scope/version checks.
 - Reviews/verifications target exact revisions. Acceptance/rejection/changes-requested decisions are independent records. Completing a task requires its explicit completion criterion, not any submission's existence. Start with an owner-explicit complete action after at least one accepted current revision; cancelled tasks are terminal unless reopened through a recorded owner transition.
 - Inquiry answers require posting authority and parent visibility but not assignment approval. Subjective trust is never calculated from likes or blind obedience.
 - Agent actions are intersected with identity/instance state, current grants, controller policy, workspace access, assignment, step-up approval and budget; deny by default. Checks and mutations occur together for authority-sensitive actions.

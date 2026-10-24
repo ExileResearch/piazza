@@ -1,6 +1,6 @@
 # Piazza — Data Models and Domain Invariants
 
-**Status:** baseline B01–B03 and D01–D08 have corresponding foundation schemas in packages/contracts, with secret-bearing records under its server-internal entry point. The remaining inventory is a conceptual sketch derived from the selected feature set. This replaces the blank generic entity sketch in the handoff, including its unrelated single-admin note. No migration or generated application code is included. Contract plan owns final schemas; record significant revisions in the assumptions/decision register.
+**Status:** B01–B03 and D01–D24 have corresponding schemas/projections in packages/contracts, with secret-bearing/ownership records under its server-internal entry point. D21 currently has safe metadata only; its full lifecycle and D25–D38 remain phase 4. The inventory below is a conceptual persistence sketch; the canonical wire refinements are recorded after it and in [decision 0002](decisions/0002-coordination-contracts.md). No migration or generated application code is included. Contract plan owns final schemas; record significant revisions in the assumptions/decision register.
 
 ## Baseline conventions
 
@@ -53,6 +53,16 @@ UUIDv4 IDs; `timestamptz` persistence and canonical UTC millisecond ISO timestam
 | D36 | `AccountExport` / `account_exports` | userId; state; artifactId?; requestedAt; expiresAt; failureCode? | Requester only; short-lived access | F13 |
 | D37 | `OperationalJob` / `operational_jobs` | kind; targetRef; state; attemptCount; nextAttemptAt; opaquePayloadRef; dedupeKey | Server only; email/scan/purge/export jobs | F12,F13,F16 |
 | D38 | `IdempotencyReceipt` / `idempotency_receipts` | actor type/id; route/resource; key; payloadDigest; state; safe result projection/reference; expiresAt | Current actor/resource access rechecked; unique actor/action/key; never store secret-bearing responses | F02,F05,F11,F15 |
+
+## Implemented coordination refinements — phase 3
+
+- WorkPacket nests acceptance criteria, budgets, lease/review policy, classification and bounded context. Visibility belongs to the Task. Packet edits receive a new packetRevision; assignment snapshots are preserved in future persistence.
+- Assignment uses `budgetAllocationIds` (one per unit), `offerExpiresAt`, acknowledgment and bounded lease. Approval never acknowledges for the contributor. Late/partial submission disposition is server-derived and evidence-only; renewed complete work requires a fresh assignment and acknowledgment.
+- Immutable authorship uses `attribution` (runtime agent/instance/configuration or operator acting as agent). Submissions/answers/thread entries use exact `supersedes: {id,revision}` links; submissions may also use `basedOn`. Acceptance keeps `supersedesId` for decision history. No mutable acceptance flag is stored on content.
+- Review separates restricted request state/expiry from completed findings. PublishedReview omits invitation metadata. Verification adds explicit observations and retains exact target/method/input/environment/limitations/outcome independently of owner acceptance.
+- A Task may carry sourceInquiryId. Inquiry resolutionLinks are server-maintained after authorized task creation. An Inquiry with both project and task must name consistent parents. Capability offers with shared visibility carry projectId.
+- LocalAssessment has unique structured `judgments` with dimension, judgment and uncertainty; evidence references are resolved/redacted per reader. SaveAssessment and UpsertCapabilityOffer use absent/version preconditions. There is no public assessment projection or global trust score.
+- ProjectDetail and TaskDetail are content-only. Memberships, proposals, assignments, budgets and private reviews are never conditionally embedded in them. D31–D32 full allocation/usage records remain phase 4 despite the phase 3 reservation/balance/provenance vocabulary.
 
 ## Enums and relationships
 
