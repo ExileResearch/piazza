@@ -1,6 +1,6 @@
 # Piazza — Data Models and Domain Invariants
 
-**Status:** B01–B03 and D01–D24 have corresponding schemas/projections in packages/contracts, with secret-bearing/ownership records under its server-internal entry point. D21 currently has safe metadata only; its full lifecycle and D25–D38 remain phase 4. The inventory below is a conceptual persistence sketch; the canonical wire refinements are recorded after it and in [decision 0002](decisions/0002-coordination-contracts.md). No migration or generated application code is included. Contract plan owns final schemas; record significant revisions in the assumptions/decision register.
+**Status:** B01–B03 and D01–D38 now have corresponding schemas/projections in packages/contracts, with secret-bearing/ownership records under its server-internal entry point. D21 includes upload/scan/delivery vocabulary. The inventory below is a conceptual persistence sketch; canonical wire refinements are recorded after it and in [decision 0002](decisions/0002-coordination-contracts.md) and [decision 0003](decisions/0003-social-artifacts-privacy-contracts.md). Full route/OpenAPI/Dart/MCP compatibility remains phase 5. No migration or generated application code is included.
 
 ## Baseline conventions
 
@@ -65,6 +65,12 @@ UUIDv4 IDs; `timestamptz` persistence and canonical UTC millisecond ISO timestam
 - ProjectDetail and TaskDetail are content-only. Memberships, proposals, assignments, budgets and private reviews are never conditionally embedded in them. D31–D32 full allocation/usage records remain phase 4 despite the phase 3 reservation/balance/provenance vocabulary.
 
 ## Enums and relationships
+
+Phase 4 refinements: WallPost attributes its author/configuration, defaults to associates and keeps content revision separate from mutable version/moderation state. Associations require distinct endpoints and recipient acceptance. SocialControl stores independent muted/blocked toggles, including explicit clearing. Reactions are versioned party receipts, with no accuracy meaning. Reports separate a generic reporter receipt, an admin content view and server-only reporter identity; moderation notices omit investigation details and never alter verification/acceptance.
+
+Artifact internal records bind all parentRefs, purpose, scanRevision, avatar moderation and optional expiry. Upload requests supply one authorized parent and metadata plus a separate file stream; no caller hash/key/scan state. Export artifacts use a server-only parent/purpose. Every parent intersects at delivery. Allocation/usage records distinguish measured from reported units, track period/reserved/consumed/cumulative released values and dedupe per allocation/event. Activity projects current redacted references into cursor pages; full event protocol remains phase 5.
+
+ConsentState records independent purpose/policyVersion/granted/decidedAt values. AccountExport uses queued/running/ready/failed/expired variants; only ready includes authenticated artifact/readyAt/expiresAt. Strict export chunks contain own records, not arbitrary workspace dumps. AccountClosure acknowledges revocation plus a purge deadline; internal component completion excludes soft-delete/pseudonymization. Public form records have exact 24-calendar-month expiry and no retained raw honeypot value. Jobs and idempotency receipts are strict, bounded and reference-based with no raw auth-secret payload or response-body replay.
 
 - Human roles are a set containing `user` and, for the seeded developer only, `admin`. Public registration never accepts roles. Admin capability does not implicitly act as a task-owner agent.
 - Agent state: `active | paused | suspended | closed`; instance: `active | paused | expired | revoked`.

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { secretSchema } from "./common.js";
 
 /** Metadata vocabulary only; phase 5 binds each actual route to operation schemas. */
 export const routeDescriptorSchema = z.strictObject({
@@ -42,3 +43,8 @@ export const idempotencyKeySchema = z
 export type RouteDescriptor = z.infer<typeof routeDescriptorSchema>;
 export type HealthProbe = z.infer<typeof healthProbeSchema>;
 export type IdempotencyKey = z.infer<typeof idempotencyKeySchema>;
+/** Sensitive human operations use a verified proof header; never persist this raw value in receipts/logs. */
+export const stepUpHeadersSchema = z.strictObject({
+  "x-step-up-token": secretSchema,
+});
+export type StepUpHeaders = z.infer<typeof stepUpHeadersSchema>;

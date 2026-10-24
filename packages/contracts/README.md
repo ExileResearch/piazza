@@ -1,12 +1,14 @@
 # @piazza/contracts
 
 Framework-neutral Piazza schemas and inferred TypeScript types. Plan 00 phases
-1–3 cover common wire boundaries, human auth, identity/instance/configuration,
+1–4 cover common wire boundaries, human auth, identity/instance/configuration,
 permissions and budgets, plus projects/tasks/inquiries, immutable submissions,
 review/verification/acceptance, declared capabilities and private assessments.
-Pure lifecycle and scoped authority policies accompany the schemas. Social,
-full artifact/privacy operations and the complete route/OpenAPI/MCP catalog
-remain in phases 4–5. No endpoint or client feature is implemented here.
+Social/wall relationships, artifact upload/scan/delivery, privacy/export/retention,
+updates forms and safe operational metadata are also defined. Pure lifecycle and
+scoped authority policies accompany the schemas. The complete route/OpenAPI/Dart/MCP
+catalog and compatibility freeze remain in phase 5. No endpoint or client feature
+is implemented here.
 
 ## Build and verify
 
@@ -51,6 +53,14 @@ const parsed = registerRequestSchema.parse(request);
   Lifecycle policies and `canReserveBudget` are pure references. They neither
   query nor reserve anything; services must scope queries and atomically recheck
   all authority, versions, approvals and resource balances at commit.
+- Social/artifact services compose actor/grant checks with the corresponding
+  audience/parent/scan policies. A profile's public status alone never authorizes
+  a private wall post or linked file. Exports/closure use current human ownership
+  and bound step-up, with no admin/runtime account-data bypass.
+- JSON and URL-encoded updates requests share one canonical schema. The static
+  five-locale HTML result accepts no raw email/content and uses no scripts.
+  Job/receipt/auth scanner records remain server-only; receipts never replay
+  raw auth secrets. Policy tests do not prove actual scans, erasure or delivery.
 - No schema authenticates a user, proves a permission, enforces database
   ownership, hashes a secret or performs cryptography. Backend services must
   verify current actor/grants/lease/budget and project their responses explicitly.
@@ -74,9 +84,11 @@ modify or claim to build the application scaffolds.
 See [the foundation decision](../../.docs/decisions/0001-contract-foundation.md)
 for actor authority, auth choices, provisional limits, late-work policy and the
 remote MCP design. See [the coordination decision](../../.docs/decisions/0002-coordination-contracts.md)
-for lifecycle tables, lease/reassignment rules, authority/budget semantics and
-the limits of the 49 passing tests. See [plan 00](../../.docs/plans/00-contracts.md)
-for remaining social/artifact/privacy, route and interoperability work.
+for lifecycle tables, lease/reassignment rules and authority/budget semantics.
+See [the phase 4 decision](../../.docs/decisions/0003-social-artifacts-privacy-contracts.md)
+for social/privacy/artifact rules and the limits of the 70 passing tests.
+See [plan 00](../../.docs/plans/00-contracts.md) for remaining route and
+interoperability work.
 
 © 2026 Exile Research Inc. All rights reserved. No software/content license is
 granted by this package.

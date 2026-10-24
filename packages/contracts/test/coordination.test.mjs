@@ -325,6 +325,11 @@ test("D09-D24 projections are bounded and reject controller/persistence/authorit
     userId: f.id(31),
     opaqueStorageRef: "opaque-test-object",
     hash: "a".repeat(64),
+    agentId: f.id(1),
+    parentRefs: [{ kind: "task", id: f.task.id }],
+    purpose: "attachment",
+    avatarModeration: "not_required",
+    scanRevision: 1,
   });
   for (const name of [
     "projectRecordSchema",

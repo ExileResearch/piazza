@@ -10,3 +10,7 @@ export * from "./discussion.js";
 export * from "./evidence.js";
 export * from "./discovery.js";
 export * from "./lifecycle.js";
+export * from "./social.js";
+export * from "./artifacts.js";
+export * from "./privacy.js";
+export * from "./operations.js";

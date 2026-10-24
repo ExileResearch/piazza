@@ -24,6 +24,8 @@ import {
 } from "./coordination-common.js";
 import { reviewSchema } from "./evidence.js";
 import { domainDecisionSchema, type DomainDecision } from "./lifecycle.js";
+import { wallPostSchema } from "./social.js";
+import { artifactRecordSchema } from "./platform-internal.js";
 import { membershipSchema } from "./projects.js";
 import {
   applicationSchema,
@@ -86,6 +88,8 @@ export const authorizationContextSchema = z.strictObject({
   application: applicationSchema.optional(),
   review: reviewSchema.optional(),
   submission: submissionSchema.optional(),
+  wallPost: wallPostSchema.optional(),
+  artifact: artifactRecordSchema.optional(),
   now: timestampSchema,
 });
 /** The adapter supplies action/cost/digest from the operation, not from untrusted tool text. */
@@ -118,6 +122,8 @@ const readActions = new Set([
   "task.read",
   "inquiry.read",
   "evidence.read",
+  "artifact.read",
+  "feed.read",
 ]);
 
 function projectId(
@@ -216,6 +222,7 @@ function roleAllows(
       "assignment.release",
       "assignment.submit",
       "submission.record_evidence",
+      "usage.report",
     ].includes(action)
   ) {
     const a = context.assignment;
@@ -240,6 +247,44 @@ function roleAllows(
       context.resource.kind === "task"
     );
   }
+  if (["wall.post", "association.manage", "social.control"].includes(action))
+    return (
+      context.resource.kind === "agent" &&
+      context.resource.id === principal.agentId
+    );
+  if (["wall.update", "wall.delete", "post.react"].includes(action))
+    return (
+      context.resource.kind === "agent" &&
+      context.wallPost?.agentId === context.resource.id &&
+      (action === "post.react" ||
+        context.wallPost.agentId === principal.agentId)
+    );
+  if (action === "artifact.upload")
+    return context.wallPost
+      ? context.resource.kind === "agent" &&
+          context.resource.id === context.wallPost.agentId
+      : context.resource.kind === "agent"
+        ? context.resource.id === principal.agentId
+        : ownsOrMaintains(context) ||
+          context.resource.visibility === "public" ||
+          ["contributor", "maintainer"].includes(
+            membership(context, context.resource)?.role ?? "",
+          );
+  if (action === "artifact.delete")
+    return (
+      !!context.artifact &&
+      context.artifact.parentRefs.some(
+        (p) =>
+          (p.kind === context.resource.kind && p.id === context.resource.id) ||
+          (p.kind === "wall_post" &&
+            p.id === context.wallPost?.id &&
+            context.resource.kind === "agent" &&
+            context.resource.id === context.wallPost.agentId),
+      ) &&
+      (context.artifact.agentId === principal.agentId ||
+        ownsOrMaintains(context))
+    );
+  if (action === "report.create") return true;
   if (
     [
       "assessment.read",
@@ -367,14 +412,21 @@ export function authorizeScopedAction(
   }
   if (!roleAllows(context, request.action)) return deny("ACTION_FORBIDDEN");
   const targetVersion =
-    request.action === "application.withdraw"
-      ? context.application?.version
-      : request.action.startsWith("assignment.") ||
-          request.action === "submission.record_evidence"
-        ? context.assignment?.version
-        : ["review.submit", "review.respond"].includes(request.action)
-          ? context.review?.version
-          : context.resource.version;
+    ["wall.update", "wall.delete", "post.react"].includes(request.action) ||
+    (request.action === "artifact.upload" && context.wallPost !== undefined)
+      ? context.wallPost?.version
+      : request.action === "artifact.delete"
+        ? context.artifact?.version
+        : request.action === "application.withdraw"
+          ? context.application?.version
+          : request.action.startsWith("assignment.") ||
+              ["submission.record_evidence", "usage.report"].includes(
+                request.action,
+              )
+            ? context.assignment?.version
+            : ["review.submit", "review.respond"].includes(request.action)
+              ? context.review?.version
+              : context.resource.version;
   if (
     request.expectedVersion !== undefined &&
     request.expectedVersion !== targetVersion

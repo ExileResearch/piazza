@@ -2,7 +2,7 @@
 
 **Scope:** packages/contracts and shared interface design; no app feature implementation.
 
-**Starting state:** application scaffolds already exist. The contracts package was absent when this build began. Phases 1–3 are now verified; social/privacy/artifact operations and route/client compatibility remain unfrozen in phases 4–5.
+**Starting state:** application scaffolds already exist. The contracts package was absent when this build began. Phases 1–4 are now verified; full route/client/MCP compatibility and baseline freeze remain in phase 5.
 
 **Prerequisites:** Resolved package available; close O01–O03 as needed before their contract families freeze.
 
@@ -37,10 +37,10 @@ Read [blueprint](../blueprint.md), [models](../data_models.md), [contracts](../c
 
 ## Phase 4 — Social, artifacts, privacy and operational contracts
 
-- [ ] 4.1 Define D25–D38 schemas including wall visibility/associations/reactions/controls/reports, budgets/activity, consent/forms/export and safe job metadata.
-- [ ] 4.2 Define artifact upload/scan/download headers and visibility constraints; do not expose storage keys, private hash-existence, raw credentials or unreviewed files.
-- [ ] 4.3 Define sanitized account export/closure and retention operation DTOs, including 30-day purge and 24-month form identifier handling; no claim that soft-delete is anonymization.
-- [ ] 4.4 Define public updates form schema for JSON and URL-encoded transport; safe localized HTML result is an explicit representation of the same use case, not another business endpoint.
+- [x] 4.1 Define D25–D38 schemas including wall visibility/associations/reactions/controls/reports, budgets/activity, consent/forms/export and safe job metadata.
+- [x] 4.2 Define artifact upload/scan/download headers and visibility constraints; do not expose storage keys, private hash-existence, raw credentials or unreviewed files.
+- [x] 4.3 Define sanitized account export/closure and retention operation DTOs, including 30-day purge and 24-month form identifier handling; no claim that soft-delete is anonymization.
+- [x] 4.4 Define public updates form schema for JSON and URL-encoded transport; safe localized HTML result is an explicit representation of the same use case, not another business endpoint.
 
 **Exit gate:** Contract fixtures cover social/data-rights/form happy and denial paths; every feature-owned noun has a defined schema/projection.
 
@@ -84,4 +84,12 @@ Phase 3 complete on `dev`. [Decision 0002](../decisions/0002-coordination-contra
 
 Verification: `npm run verify` passes strict typecheck, ESM/CommonJS builds, 49 tests and formatting. Each phase 3 operation has request/result/error-envelope fixtures and unknown-field denial. Two-controller policy scenarios cover role/parent access, stale versions, revocation facts, budgets, single-grant scope intersection, exact approval digest/revision, reviewer/owner separation and reassignment after evidence-only work. Packaged offline consumers verify the new runtime exports/inferred types in both module systems without app hoisting.
 
-The first test runs exposed shared mutable fixtures and an invalid additive-admin role fixture; both were corrected and the full suite rerun. No live service was used. Pure policies require trusted repository snapshots and atomic service enforcement: these tests do not prove real SQL prefilters, concurrency/idempotency, cryptographic authentication, artifact access, network E2E, MCP, OpenAPI or Dart parity. No application feature code changed. Phases 4–5 remain unchecked; next is phase 4 social/artifact/privacy/operational contracts.
+The first test runs exposed shared mutable fixtures and an invalid additive-admin role fixture; both were corrected and the full suite rerun. No live service was used. Pure policies require trusted repository snapshots and atomic service enforcement: these tests do not prove real SQL prefilters, concurrency/idempotency, cryptographic authentication, artifact access, network E2E, MCP, OpenAPI or Dart parity. No application feature code changed. At that checkpoint phases 4–5 remained unchecked; phase 4 is now recorded below.
+
+## Social, artifact, privacy and operations evidence — 2026-10-24
+
+Phase 4 complete on `dev`. [Decision 0003](../decisions/0003-social-artifacts-privacy-contracts.md) records D25–D38 schemas/projections, complete D21 upload/scan/delivery vocabulary, mutual associations, wall audience/mute/block rules, separate reports/moderation, allocation/usage provenance and dedupe, safe activity/job/receipt metadata, human export/closure authority, retention deadlines and one updates-form operation with JSON/URL-encoded/HTML representations.
+
+Verification: `npm run verify` passes strict typecheck, ESM/CommonJS builds, 70 tests and formatting. Added fixtures cover all phase 4 request/result/error boundaries, two-operator audience/parent denial, blocked contact, stale wall/scan writes, quarantine and safe delivery headers, allocation batches and repeat usage, bound step-up, admin versus account owner, safe export chunks/expiry, 30-day closure scheduling, leap-day 24-month form retention, duplicate-key/malformed form rejection, five-locale static HTML and no raw secrets in metadata. Independent offline packed consumers check new exports/inferred types in both module systems.
+
+The export-job union initially required a nonempty tuple to typecheck; it retains strict variants and expiry validation. The runtime suite passed on its first full run and after refinements. These are contract/pure-policy fixtures, not evidence of live scanning, SQL pagination isolation, erasure, backup restore, actual job/delivery workers, no-JS browser accessibility or network E2E. No dependency pins or app features were changed. Phase 5 remains unchecked; backend features still wait for complete routes, HTTP/MCP mapping, event/idempotency semantics, OpenAPI/Dart parity and baseline freeze.

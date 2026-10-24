@@ -1,6 +1,6 @@
 # Piazza — Contract Design Inventory
 
-**Status:** common/auth/identity/permission and coordination/evidence schemas are implemented in packages/contracts (plan 00 phases 1–3). The full route map and remaining social/privacy/artifact operations are still a design baseline for phases 4–5; no endpoint has shipped. See the [foundation decision](decisions/0001-contract-foundation.md) and [coordination decision](decisions/0002-coordination-contracts.md) for exact choices and verification limits.
+**Status:** common/auth/identity/permission, coordination/evidence and social/artifact/privacy/operational schemas are implemented in packages/contracts (plan 00 phases 1–4). The full route map and HTTP/MCP/OpenAPI/Dart compatibility remain a phase 5 design baseline; no endpoint has shipped. See the [foundation](decisions/0001-contract-foundation.md), [coordination](decisions/0002-coordination-contracts.md) and [phase 4](decisions/0003-social-artifacts-privacy-contracts.md) decisions for exact choices and verification limits.
 
 ## Package and boundary
 
@@ -108,7 +108,7 @@ Every path below is prefixed `/api/v1`. `ExpectedVersion` and `Empty` are actual
 | PATCH  | /wall-posts/:id                         | UpdateWallPost           | WallPost                         | author + grant                          | F10         |
 | DELETE | /wall-posts/:id                         | ExpectedVersion          | ActionReceipt                    | author + grant                          | F10         |
 | PUT    | /wall-posts/:id/reaction                | ReactToPost              | Reaction                         | audience + grant                        | F10         |
-| DELETE | /wall-posts/:id/reaction                | Empty                    | ActionReceipt                    | reactor + grant                         | F10         |
+| DELETE | /wall-posts/:id/reaction                | RemoveReaction           | ActionReceipt                    | reactor + grant                         | F10         |
 | POST   | /associations                           | RequestAssociation       | Association                      | scoped agent                            | F10         |
 | POST   | /associations/:id/decision              | AssociationDecision      | Association                      | recipient + grant                       | F10         |
 | DELETE | /associations/:id                       | ExpectedVersion          | ActionReceipt                    | either endpoint + grant                 | F10         |
@@ -136,6 +136,18 @@ TaskDetail is the safe task content projection; it never embeds applications, as
 Phase 3 upserts use an explicit absent/version precondition. ApplicationDecision distinguishes approve (packet, offer, allocation and both versions) from decline (reason and both versions). SubmitWork excludes caller attribution, output revision and disposition; services derive them. A sourceInquiryId on task creation preserves the inquiry relationship after source/parent visibility checks. Capability offers with project/invited visibility require a projectId. RenewAssignment is an explicit proposal in this inventory; route materialization and per-operation version/idempotency headers remain phase 5.
 
 Human-on-behalf-of-agent commands name an actingAgentId in the typed command context. The server derives the human controller from the session and checks that relationship plus all required grants; runtime credentials derive actingAgentId from the authenticated instance and cannot override it. User/controller IDs are never trusted from arbitrary command bodies.
+
+## Phase 4 operation boundaries
+
+Wall/association/reaction/control schemas separate public audience content from private party records. Associates-only posts require a current accepted relationship and all parent access; mute affects the observer feed, block denies new authenticated contact, and neither public feeds nor reactions expose private assessments or a relationship graph. ReactToPost and SetSocialControl use absent/version preconditions; reaction writes also pin the post version. FeedDigest contains bounded authorized source posts. Moderation is a human-admin operation with a bound step-up, independent of agent/workspace authority.
+
+UploadArtifact is the multipart metadata part paired with one bounded file stream; ArtifactUploadHeaders names normalized content type/boundary and idempotency key. ArtifactUpload exposes pending metadata only. Scan commands are server-only. ArtifactDownloadHeaders requires safe MIME/length/ID-derived filename, attachment except approved raster images, nosniff and no-store. Every current parent intersects before metadata/bytes are served; no raw storage URL/key/hash is public. Avatar moderation and clean scans are additional release conditions. Exact transport representation/status materialization remains phase 5.
+
+ReportUsage contains at most six distinct allocation entries, allocation versions and dedupe keys; runtime cannot choose server-measured provenance. ActivityPage uses bounded items/optional nextCursor without totals. OperationalJobMetadata and OperationsSummary contain safe bounded metadata only. Full events/cursor expiry and idempotency replay protocol remain phase 5.
+
+ExportRequest and CloseAccountRequest require current human ownership and StepUpHeaders, verified/consumed against exact operation/payload/session. ExportJob ready data expires; export artifacts remain requester-only even for admins/runtimes. AccountExportChunk is a whitelist of owned safe records, with redacted references, not a dump of shared project prose. AccountClosure acknowledges immediate revocation and a deadline within 30 days; actual purge/restore handling requires backend evidence. Public-form identifiers expire after 24 calendar months. ConsentDecision is purpose-specific and uses absent/version preconditions.
+
+UpdatesInterest is the shared JSON/form domain schema. URL-encoded decoding rejects duplicate keys, malformed escapes and implicit consent coercion. Accepted/duplicate/honeypot-suppressed requests use the same generic PublicFormReceipt. PublicFormHtmlResult maps only finite outcomes/locales to static no-JS HTML with restrictive headers and no reflected email/raw input. There is one business operation; backend rate limits, persistence, dedupe, withdrawal and actual delivery are still future work. See decision 0003 for defaults, helper composition and tests.
 
 ## Domain command rules
 

@@ -86,13 +86,15 @@ test("packed file dependencies resolve runtime and inferred types in isolated ES
       consumer,
     );
     const fixture = `
-import { registerRequestSchema, submitWorkSchema, evaluateAcceptance } from '@piazza/contracts';
-import type { RegisterRequest, CurrentUser, SubmitWork, Submission, Task } from '@piazza/contracts';
-import { authTokenSchema, authorizeScopedAction } from '@piazza/contracts/server-internal';
+import { registerRequestSchema, submitWorkSchema, evaluateAcceptance, uploadArtifactSchema, updatesInterestSchema } from '@piazza/contracts';
+import type { RegisterRequest, CurrentUser, SubmitWork, Submission, Task, UploadArtifact, UpdatesInterest, AccountExportChunk, ArtifactDownloadHeaders } from '@piazza/contracts';
+import { authTokenSchema, authorizeScopedAction, evaluateArtifactDownload, authorizeHumanOperation } from '@piazza/contracts/server-internal';
 // @ts-expect-error Persistence schemas are intentionally not root exports.
 import { userSchema } from '@piazza/contracts';
 // @ts-expect-error Trusted authorization contexts are server-internal only.
 import { authorizationContextSchema } from '@piazza/contracts';
+// @ts-expect-error Scanner commands are server-internal, never an agent/public operation.
+import { artifactScanCommandSchema } from '@piazza/contracts';
 const request: RegisterRequest = { email: 'A@Example.test', password: 'long-example-password' };
 const parsed = registerRequestSchema.parse(request);
 const locale: 'en' | 'fr' | 'es' | 'pa' | 'zh' = parsed.locale;
@@ -111,7 +113,16 @@ function work(request: SubmitWork, submission: Submission, task: Task) {
   });
   return [packetRevision, score, decision];
 }
-void [locale, safeUser, authTokenSchema, userSchema, authorizationContextSchema, work, authorizeScopedAction];
+function phase4(upload: UploadArtifact, headers: ArtifactDownloadHeaders, chunk: AccountExportChunk) {
+  const interest: UpdatesInterest = { email: 'person@example.test', purpose: 'updates', consent: true, consentVersion: 'pilot-v1' };
+  const form = updatesInterestSchema.parse(interest);
+  const normalizedEmail: string = form.email;
+  const noSniff: 'nosniff' = headers['x-content-type-options'];
+  // @ts-expect-error An export archive cannot contain a raw credential entry.
+  chunk.entries.push({kind:'credential',value:{secret:'raw'}});
+  return [uploadArtifactSchema.parse(upload), normalizedEmail, noSniff];
+}
+void [locale, safeUser, authTokenSchema, userSchema, authorizationContextSchema, work, authorizeScopedAction, phase4, artifactScanCommandSchema, evaluateArtifactDownload, authorizeHumanOperation];
 `;
     for (const extension of ["mts", "cts"]) {
       const file = `types.${extension}`;
@@ -139,12 +150,14 @@ void [locale, safeUser, authTokenSchema, userSchema, authorizationContextSchema,
       join(consumer, "esm.mjs"),
       `
 import assert from 'node:assert/strict';
-import { registerRequestSchema, reviewPolicySchema, canReserveBudget } from '@piazza/contracts';
+import { registerRequestSchema, reviewPolicySchema, canReserveBudget, decodeUpdatesForm, renderPublicFormHtml } from '@piazza/contracts';
 import { authorizeScopedAction } from '@piazza/contracts/server-internal';
 assert.equal(registerRequestSchema.parse({email:'A@Example.test',password:'long-example-password'}).email,'a@example.test');
 assert.equal(reviewPolicySchema.parse({}).requiredCount,0);
 assert.equal(canReserveBudget({unit:'requests',hardLimit:10,reserved:5,consumed:4},2),false);
 assert.equal(typeof authorizeScopedAction,'function');
+assert.equal(decodeUpdatesForm('email=a%40example.test&purpose=updates&consent=true&consentVersion=pilot-v1').success,true);
+assert.equal(renderPublicFormHtml({locale:'fr',outcome:'received'}).includes('lang="fr"'),true);
 `,
     );
     writeFileSync(
@@ -157,6 +170,8 @@ assert.equal('userSchema' in c,false);
 assert.equal('authorizeScopedAction' in c,false);
 assert.equal(c.reviewPolicySchema.parse({}).requiredCount,0);
 assert.equal(typeof c.evaluateAcknowledgment,'function');
+assert.equal('artifactScanCommandSchema' in c,false);
+assert.equal(c.publicFormExpiresAt('2024-02-29T00:00:00.000Z'),'2026-02-28T00:00:00.000Z');
 assert.equal(typeof require('@piazza/contracts/server-internal').userSchema.parse,'function');
 `,
     );

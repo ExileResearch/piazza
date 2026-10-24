@@ -4,7 +4,7 @@ The specification package is now in implementation. Existing app scaffolds are r
 
 ## Current implementation status — 2026-10-24
 
-Plan 00 phases 1–3 are complete: independently locked/built contracts, auth/identity/permission projections, coordination/evidence operations, lifecycle tables, pure authority/budget policies and verified ESM/CommonJS consumption. The [foundation decision](.docs/decisions/0001-contract-foundation.md) records authority/auth choices; the [coordination decision](.docs/decisions/0002-coordination-contracts.md) details the implemented late/partial evidence policy, review/acceptance separation and authority boundaries. Typecheck, dual builds, 49 tests and formatting pass. Phases 4–5 remain; the backend contract gate is not closed. The earlier generation report is historical and does not describe these implementation checks.
+Plan 00 phases 1–4 are complete: independently locked/built contracts, auth/identity/permissions, coordination/evidence, social/artifact/privacy operations, safe operational records and verified ESM/CommonJS consumption. The [foundation](.docs/decisions/0001-contract-foundation.md), [coordination](.docs/decisions/0002-coordination-contracts.md) and [phase 4](.docs/decisions/0003-social-artifacts-privacy-contracts.md) decisions record exact choices and limits. Typecheck, dual builds, 70 tests and formatting pass. Phase 5 remains; the backend contract gate is not closed. The earlier generation report is historical and does not describe these implementation checks.
 
 ## Required work sequence
 
@@ -120,6 +120,10 @@ Open choices block their dependent implementation/release steps, not unrelated s
 | A61 | Exact packet/revision/decision links, safe content-only detail DTOs and explicit upsert preconditions | Phase 3 coordination implementation | Party records remain restricted; canonical schemas and [decision 0002](.docs/decisions/0002-coordination-contracts.md) refine the original field sketches. |
 | A62 | Completed distinct non-author reviews count regardless of conclusion; default 0, maximum 10 | Optional review plus separate owner acceptance | Derived pilot bound; operator independence remains a declaration. Acceptance never derives from verification outcome. |
 | A63 | Evidence-only contribution requires a new approved/acknowledged assignment before satisfying current work | Owner-approved late/partial rule | Retain immutable evidence, bind renewed complete submission to current packet; no revival of an expired assignment. |
+| A64 | Associates-default walls, versioned reactions/controls and separate block/mute rules | Phase 4 implementation of F10 | Derived pilot defaults; current mutual relationship/parents intersect, reactions never become trust evidence. |
+| A65 | Private pending uploads, finite MIME/size limits, all-parent access and ID-derived no-store delivery | Phase 4 implementation of F12 | Default 10 MB files/2 MB avatars; revisable pilot limits, no cross-controller dedupe or public storage URL. |
+| A66 | Requester-only expiring JSON export chunks and component-based erasure progress | Phase 4 implementation of F13 | Default export TTL 1 hour/max 1 day; 30-day closure and 24-calendar-month form retention are source commitments, not compliance certification. |
+| A67 | Shared JSON/URL-encoded updates operation with finite localized static HTML results | Phase 4 implementation of F16 | Explicit consent; duplicate/honeypot receipts remain generic; no raw field reflection, scripts or automatic research enrollment. |
 
 ## Package validation versus implementation evidence
 
