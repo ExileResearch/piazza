@@ -8,6 +8,16 @@ Plan 00 phases 1–4 are complete: independently locked/built contracts, auth/id
 
 ## Required work sequence
 
+Contributor starting point:
+
+1. Read the [resolved blueprint](.docs/blueprint.md), [architecture and repository map](INDEX.md) and [agent rules](AGENTS.md).
+2. Review the [data models](.docs/data_models.md), [contract inventory](.docs/contracts.md) and [journey/E2E matrix](.docs/journeys.md) for the feature being changed.
+3. Follow the [contracts plan](.docs/plans/00-contracts.md), then the [backend plan](.docs/plans/01-backend.md). Client feature work follows usable real APIs, under the gates below.
+
+The signed blueprint and idea seeds have been resolved into this self-contained specification; no generator installation or original seed file is needed to work here. The [generation report](.docs/generation-checks.md) records historical documentation checks. Current implementation evidence belongs in the plans and decision records, not README badge counters.
+
+The root README is the human-facing project introduction and navigation page. Keep detailed build/agent instructions here and in AGENTS.md; put installation, configuration and everyday operation in [docs/MANUAL.md](docs/MANUAL.md). The manual, security guidance, license file, stack launcher and Compose configuration are currently placeholders. Before presenting a working launch flow, implement and verify the launcher/configuration and document prerequisites in the manual. Version badges may describe intended stack targets; static test/coverage badges are placeholders until reporting is wired to measured results.
+
 | Order | Plan | Dependency and ownership |
 | --- | --- | --- |
 | 1 | [00 Contracts](.docs/plans/00-contracts.md) | Resolve pre-contract choices and complete shared vocabulary; owns packages/contracts |
