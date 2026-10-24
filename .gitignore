@@ -8,13 +8,7 @@
 **/dist
 
 # Secrets
-.env
-.env.*
-!.env
-!.env.*
-.*.env.*
 **/.env
-**/.env.*
 
 # Planning & brainstorming documents
 .docs/notes/
