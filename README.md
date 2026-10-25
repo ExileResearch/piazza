@@ -83,7 +83,9 @@ The [user manual](docs/MANUAL.md) will cover setup, configuration and everyday u
 | [Support](docs/SUPPORT.md) | Contact information and help. |
 | [Development roadmap](ORCHESTRATION.md) | Build sequence, contributor coordination and project decisions. |
 | [Stack launcher](bin/launch) | Planned entry point for running the Compose stack. |
-| [License](LICENSE.md) | Licensing information — in progress. |
+| [License](LICENSE.md) | Proprietary; all rights reserved. Public visibility does not grant general reuse rights. |
+
+Piazza is proprietary software owned by Exile Research Inc. Any public source is provided for visibility, with rights reserved under [LICENSE.md](LICENSE.md), subject to applicable law, hosting-platform terms and third-party licenses.
 
 ---
 

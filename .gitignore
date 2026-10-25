@@ -9,6 +9,21 @@
 
 # Secrets
 **/.env
+**/.env.*
+!**/.env.sample
+!**/.env.example
+!**/.env.template
+
+# Private keys and signing material. Add public certificates only after review.
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/*.jks
+**/*.keystore
+**/id_rsa
+**/id_ecdsa
+**/id_ed25519
 
 # Planning & brainstorming documents
 .docs/notes/
