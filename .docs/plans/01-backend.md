@@ -2,20 +2,22 @@
 
 **Scope:** apps/server-core; schema-driven use cases, persistence, MCP and providers.
 
-**Starting state:** documentation only; no scaffold or passing implementation checks are assumed.
+**Current state (2026-10-24):** existing Nest scaffold retained; foundation steps 1.1–1.3 verified. Container step 1.4 is deferred at the owner's request. Product use cases remain future work.
 
 **Prerequisites:** Plan00 contract baseline complete; resolve relevant auth/provider/deployment decisions before implementing dependent behavior.
 
-Read [blueprint](../blueprint.md), [models](../data_models.md), [contracts](../contracts.md), [journeys](../journeys.md), [AGENTS](../../AGENTS.md) and the applicable app docs before each slice. Contract changes precede endpoint/client changes. All checkboxes are prospective.
+Read [blueprint](../blueprint.md), [models](../data_models.md), [contracts](../contracts.md), [journeys](../journeys.md), [AGENTS](../../AGENTS.md) and the applicable app docs before each slice. Contract changes precede endpoint/client changes. Checked boxes have recorded implementation evidence; unchecked boxes remain future work.
 
 ## Phase 1 — Foundation and persistence
 
-- [ ] 1.1 Scaffold Nest app with its own manifest/lockfile, contract file dependency, strict TS, build/lint/unit/integration/E2E scripts and complete .env.sample validation.
-- [ ] 1.2 Wire feature modules, common Zod boundary pipe/strict response projection, safe ApiErrorResponse, correlation IDs, CORS/CSP/rate limits and /health,/ready.
-- [ ] 1.3 Set up TypeORM/PostgreSQL DataSource, baseline B01–B03/D01–D08 migrations, indexes and migration:generate/run/revert scripts; disable production schema synchronization.
+- [x] 1.1 Scaffold Nest app with its own manifest/lockfile, contract file dependency, strict TS, build/lint/unit/integration/E2E scripts and complete .env.sample validation.
+- [x] 1.2 Wire feature modules, common Zod boundary pipe/strict response projection, safe ApiErrorResponse, correlation IDs, CORS/CSP/rate limits and /health,/ready.
+- [x] 1.3 Set up TypeORM/PostgreSQL DataSource, baseline B01–B03/D01–D08 migrations, indexes and migration:generate/run/revert scripts; disable production schema synchronization.
 - [ ] 1.4 Add root-context multi-stage server Dockerfile and proposed Compose integration without deploying; contracts build first and secrets remain external.
 
 **Exit gate:** Server imports built contracts, typecheck/build/lint passes, migrations apply/revert on disposable DB and readiness fails non-2xx when required dependencies fail.
+
+**Evidence (2026-10-24):** `apps/server-core` imports contracts 1.0.0 with a corrected local file dependency, pinned packages, strict NodeNext/ESM and validated configuration. `npm run verify` passes typecheck/build/lint, 40 unit tests, 11 HTTP E2E tests and 6 PostgreSQL integration tests. PostgreSQL 17.11 migration apply/revert/reapply, no metadata drift, transaction rollback, hidden secret columns, cross-controller foreign keys and read-only readiness failure checks pass. The automatic test helper creates/removes its own localhost-only container. HTTP product operations exist only in test controllers; no auth, agent control, mail delivery or MCP API is claimed. [Decision 0005](../decisions/0005-backend-foundation.md) records versions, limits and warnings. Step 1.4 remains unchecked and the full Phase 1 container gate is still open.
 
 ## Phase 2 — Human auth, privacy-safe enrollment and sessions
 

@@ -6,8 +6,8 @@
 piazza/   # Root of project.
 ├── .docs/                      # Planning, specifications, and agent constraints.
 │   ├── blueprint.md            # Original project blueprint.
-│   ├── contracts.md            # Planned platform contracts.
-│   ├── data_models.md          # Planned platform data models.
+│   ├── contracts.md            # Canonical platform contracts.
+│   ├── data_models.md          # Model inventory and persistence scope.
 │   ├── generation-checks.md    # Artifact from Staas generation engine, safe to ignore.
 │   ├── journeys.md             # User journies
 │   ├── research.md             # Open request paths
@@ -32,7 +32,7 @@ piazza/   # Root of project.
 │       ├── 05-security_pass.md     # Security hardening and checks pass.
 │       └── 06-release_pass.md      # Final pre-relase polish and checks pass.
 │
-├── apps/                   # Reference files - plans, legacy code, etc.
+├── apps/                   # Product applications and scaffolds.
 │   ├── desktop-client/     # Electron/Angular desktop client source. (future)
 │   ├── landing-page/       # SvelteKit landing page source.
 │   ├── mobile-client/      # Flutter mobile client source. (future)
@@ -61,7 +61,7 @@ piazza/   # Root of project.
 
 # Piazza — Package and Intended Architecture
 
-Application scaffolds are present. Contracts plan 00 is complete at private baseline 1.0.0, with canonical schemas/policies, typed route/MCP catalogs, generated OpenAPI, representative Dart parity and independent ESM/CommonJS consumer checks. See [decision 0004](.docs/decisions/0004-contract-baseline.md) for evidence and limits. Backend plan 01 is next; app features still follow the orchestration gates. Implementation ownership is:
+Application scaffolds are present. Contracts plan 00 is complete at private baseline 1.0.0, with canonical schemas/policies, typed route/MCP catalogs, generated OpenAPI, representative Dart parity and independent ESM/CommonJS consumer checks. See [decision 0004](.docs/decisions/0004-contract-baseline.md) for evidence and limits. Backend plan 01 steps 1.1–1.3 are verified: configuration/API boundaries, probes and the ten-table PostgreSQL foundation. See [decision 0005](.docs/decisions/0005-backend-foundation.md) and the [manual](docs/MANUAL.md). Container integration remains deferred; product features still follow the orchestration gates. Implementation ownership is:
 
 | Location            | Responsibility                                                              | Technology                                         |
 | ------------------- | --------------------------------------------------------------------------- | -------------------------------------------------- |

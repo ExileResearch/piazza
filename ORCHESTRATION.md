@@ -4,7 +4,7 @@ The specification package is now in implementation. Existing app scaffolds are r
 
 ## Current implementation status — 2026-10-24
 
-Plan 00 phases 1–5 are complete at private contracts baseline **1.0.0**: canonical schemas/policies, 117 product routes, 11 protocol/probe/development transports, 72 MCP tool mappings, generated OpenAPI and representative Freezed Dart parity. [Decision 0004](.docs/decisions/0004-contract-baseline.md) records choices, pins and compatibility limits. Typecheck, dual builds, 83 tests, artifact drift and formatting pass; the separate Dart gate passes regeneration, analyzer and 21 shared fixtures. The backend contract prerequisite is closed; backend plan 01 is next, with no backend implementation box checked by this milestone. SDK interoperability uses synthetic authentication/injected Fetch; production OAuth, deployed APIs and independently operated runtimes remain backend acceptance work. The earlier generation report is historical.
+Plan 00 phases 1–5 are complete at private contracts baseline **1.0.0**: canonical schemas/policies, 117 product routes, 11 protocol/probe/development transports, 72 MCP tool mappings, generated OpenAPI and representative Freezed Dart parity. [Decision 0004](.docs/decisions/0004-contract-baseline.md) records choices, pins and compatibility limits. Typecheck, dual builds, 83 tests, artifact drift and formatting pass; the separate Dart gate passes regeneration, analyzer and 21 shared fixtures. The backend contract prerequisite is closed. Backend plan 01 steps 1.1–1.3 are now verified: strict Nest/ESM configuration, canonical HTTP boundaries/probes and the ten-table PostgreSQL foundation. The server gate passes 40 unit, 11 HTTP and 6 PostgreSQL tests with typecheck/build/lint. [Decision 0005](.docs/decisions/0005-backend-foundation.md) records evidence and limits. Container step 1.4 is explicitly deferred; product authentication and later backend phases remain open. SDK interoperability uses synthetic authentication/injected Fetch; production OAuth, deployed APIs and independently operated runtimes remain backend acceptance work. The earlier generation report is historical.
 
 ## Required work sequence
 
@@ -16,7 +16,7 @@ Contributor starting point:
 
 The signed blueprint and idea seeds have been resolved into this self-contained specification; no generator installation or original seed file is needed to work here. The [generation report](.docs/generation-checks.md) records historical documentation checks. Current implementation evidence belongs in the plans and decision records, not README badge counters.
 
-The root README is the human-facing project introduction and navigation page. Keep detailed build/agent instructions here and in AGENTS.md; put installation, configuration and everyday operation in [docs/MANUAL.md](docs/MANUAL.md). The manual, security guidance, license file, stack launcher and Compose configuration are currently placeholders. Before presenting a working launch flow, implement and verify the launcher/configuration and document prerequisites in the manual. Version badges may describe intended stack targets; static test/coverage badges are placeholders until reporting is wired to measured results.
+The root README is the human-facing project introduction and navigation page. Keep detailed build/agent instructions here and in AGENTS.md; put installation, configuration and everyday operation in [docs/MANUAL.md](docs/MANUAL.md). The manual now documents the verified backend foundation. The full-stack launcher and Compose integration have not passed the backend container gate; verify those before presenting a working whole-stack launch flow. Version badges may describe intended stack targets; static test/coverage badges are placeholders until reporting is wired to measured results.
 
 | Order | Plan | Dependency and ownership |
 | --- | --- | --- |
@@ -139,6 +139,7 @@ Open choices block their dependent implementation/release steps, not unrelated s
 | A69 | Signed opaque event cursors and reference-only receipts | Phase 5 transport defaults | Default cursor 5 minutes/max 15, events/receipts 24 hours; current authority always rechecked, no secret replay. |
 | A70 | MCP 2026-07-28 stateless HTTP with pre-registered OAuth/PKCE clients and explicit tool allowlist | Official specification and SDK 2.4.0 fixture | No legacy session, subscriptions or credential/admin tools; deployed OAuth and independent runtimes remain backend gates. |
 | A71 | Private contracts 1.0.0; OpenAPI 3.1.1 and representative Freezed regeneration/parity | Phase 5 consumer gate | Node and Dart checks are separate; structural parity does not reproduce all Zod refinements or live authorization. |
+| A72 | Backend ESM, migration-only schema management, read-only readiness and per-process rate bounds | Existing scaffold/packages + phase 1 implementation | [Decision 0005](.docs/decisions/0005-backend-foundation.md); container integration deferred, product auth/use cases remain future gates. |
 
 ## Package validation versus implementation evidence
 

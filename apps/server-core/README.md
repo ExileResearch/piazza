@@ -1,98 +1,43 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Piazza API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS foundation for the Piazza backend. Current runtime routes are `GET /health` and `GET /ready`, plus explicitly enabled development documentation. Product authentication, agent control, task coordination and MCP endpoints are planned, not implemented by this foundation.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+See the [manual](../../docs/MANUAL.md) for setup, configuration and probes; [backend plan](../../.docs/plans/01-backend.md) for implementation progress; and [foundation decision](../../.docs/decisions/0005-backend-foundation.md) for persistence and compatibility details.
 
-## Description
+## Developer checks
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Build `packages/contracts` first. Run these commands from this directory:
 
-## Project setup
-
-```bash
-$ npm install
+```sh
+npm ci
+npm run verify
 ```
 
-## Compile and run the project
+`verify` runs typecheck, build, lint, unit tests, HTTP E2E tests, then real PostgreSQL integration tests. Docker must be running; the database helper creates a localhost-only PostgreSQL 17 container with temporary storage and removes it afterward. The first run may need to fetch `postgres:17-alpine`. No existing Compose service or database is used.
 
-```bash
-# development
-$ npm run start
+Individual checks: `typecheck`, `build`, `lint`, `test:unit`, `test:e2e`, `test:database`. `test:integration` instead requires an explicit `TEST_DATABASE_URL`: localhost, database name beginning `piazza_test`, no URL query options, disposable credentials with CREATEDB permission. The suite creates and drops a separate randomly named database. It never reads `.env`; do not supply production credentials. An externally supplied test server/container remains the caller's responsibility.
 
-# watch mode
-$ npm run start:dev
+`npm run start:dev` runs the source watcher. `npm run build` followed by `npm run start:prod` runs compiled ESM. Node 24 is required. Jest uses Node's experimental VM modules because the installed adapters use ESM; the resulting Node warning is expected.
 
-# production mode
-$ npm run start:prod
+## Migrations
+
+Review the target configuration first; CLI commands use this app's `.env`, overridden by process-injected values. Migration commands connect to that configured database and can change or remove data. Use a disposable database for generation and reversal checks; review generated SQL before applying it elsewhere.
+
+```sh
+npm run migration:show
+npm run migration:generate -- src/database/migrations/DescriptiveName
+npm run migration:run
+npm run migration:revert
 ```
 
-## Run tests
+The TypeORM generator emits a normal import for `MigrationInterface` and `QueryRunner`; make it `import type` under this project's `verbatimModuleSyntax`, then format and review the migration. Synchronization and destructive automatic schema dropping are always disabled. Migration application on startup is an explicit opt-in (`DB_MIGRATIONS_RUN=true`); the default is manual application.
 
-```bash
-# unit tests
-$ npm run test
+The foundation migration creates ten tables for B01–B03/D01–D08. Row types use `Date`/`null`, whereas DTOs use canonical UTC strings/omitted optionals. Never return ORM rows. Secret columns have `select: false`, which is defense in depth rather than authorization; explicit selections and raw SQL still require careful projection.
 
-# e2e tests
-$ npm run test:e2e
+## Extending the API
 
-# test coverage
-$ npm run test:cov
-```
+Use `@Contract(operationId)` and `@ContractInput()` for JSON operations, with canonical route schemas. The interceptor checks consumed headers, params, query, body and the complete success envelope. It rejects extra outbound fields rather than removing them. Binary/HTML form transports require their own adapters and currently fail closed through this JSON boundary.
 
-## Deployment
+`ContractIdentityGuard` checks a server-established actor's shape and role class. Credential validation, current account state, live scoped grants, step-up, resource membership, budget enforcement, idempotency and transactional policies must be implemented before enabling their corresponding product routes. Header text alone never establishes an actor. Test-only controllers exercise the boundary without exposing fake product APIs.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+The common rate limiter uses per-process memory and per-handler/IP keys, with no trusted proxy hops by default. It is a foundation bound, not a distributed deployment quota. The auth-specific configuration is reserved until authentication routes exist. No cookie sessions, offline queues, mail sends, object uploads or model calls are activated.

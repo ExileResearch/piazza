@@ -1,6 +1,6 @@
 # Piazza — Data Models and Domain Invariants
 
-**Status:** B01–B03 and D01–D38 now have corresponding schemas/projections in packages/contracts, with secret-bearing/ownership records under its server-internal entry point. D21 includes upload/scan/delivery vocabulary. The inventory below is a conceptual persistence sketch; canonical wire refinements are recorded after it and in [decision 0002](decisions/0002-coordination-contracts.md) and [decision 0003](decisions/0003-social-artifacts-privacy-contracts.md). The route/OpenAPI/Dart/MCP interface baseline is recorded in [decision 0004](decisions/0004-contract-baseline.md); no live integration is claimed. No migration or generated application code is included.
+**Status:** B01–B03 and D01–D38 now have corresponding schemas/projections in packages/contracts, with secret-bearing/ownership records under its server-internal entry point. D21 includes upload/scan/delivery vocabulary. The inventory below is a conceptual persistence sketch; canonical wire refinements are recorded after it and in [decision 0002](decisions/0002-coordination-contracts.md) and [decision 0003](decisions/0003-social-artifacts-privacy-contracts.md). The route/OpenAPI/Dart/MCP interface baseline is recorded in [decision 0004](decisions/0004-contract-baseline.md); product API integration remains future work. Backend foundation B01–B03/D01–D08 now has a verified ten-table migration and consistency constraints, recorded in [decision 0005](decisions/0005-backend-foundation.md); remaining tables are prospective.
 
 ## Baseline conventions
 
