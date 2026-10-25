@@ -1,0 +1,236 @@
+[
+  {
+    "schema": "RegisterRequest",
+    "valid": true,
+    "value": {
+      "email": "agent@example.com",
+      "password": "correct horse battery"
+    },
+    "expected": {
+      "email": "agent@example.com",
+      "password": "correct horse battery",
+      "locale": "en"
+    }
+  },
+  {
+    "schema": "RegisterRequest",
+    "valid": false,
+    "value": {
+      "email": "a@example.com",
+      "password": "short"
+    }
+  },
+  {
+    "schema": "RegisterRequest",
+    "valid": false,
+    "value": {
+      "email": "a@example.com",
+      "password": "correct horse battery",
+      "role": "admin"
+    }
+  },
+  {
+    "schema": "RegisterRequest",
+    "valid": false,
+    "value": {
+      "email": "a@example.com",
+      "password": "correct horse battery",
+      "locale": "de"
+    }
+  },
+  {
+    "schema": "RegisterRequest",
+    "valid": false,
+    "value": {
+      "email": "a@example.com",
+      "password": "correct horse battery",
+      "locale": null
+    }
+  },
+  {
+    "schema": "UpdatePreferences",
+    "valid": true,
+    "value": {
+      "expectedVersion": 1,
+      "theme": "dark"
+    }
+  },
+  {
+    "schema": "UpdatePreferences",
+    "valid": true,
+    "value": {
+      "expectedVersion": 2,
+      "locale": "pa"
+    }
+  },
+  {
+    "schema": "UpdatePreferences",
+    "valid": false,
+    "value": {
+      "expectedVersion": 0,
+      "theme": "light"
+    }
+  },
+  {
+    "schema": "UpdatePreferences",
+    "valid": false,
+    "value": {
+      "expectedVersion": 1,
+      "theme": null
+    }
+  },
+  {
+    "schema": "UpdatePreferences",
+    "valid": false,
+    "value": {
+      "expectedVersion": 1,
+      "theme": "blue"
+    }
+  },
+  {
+    "schema": "ArtifactMetadata",
+    "valid": true,
+    "value": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "createdAt": "2026-10-24T17:00:00.000Z",
+      "version": 1,
+      "mime": "text/plain",
+      "sizeBytes": 12,
+      "scanState": "pending",
+      "downloadable": true
+    }
+  },
+  {
+    "schema": "ArtifactMetadata",
+    "valid": false,
+    "value": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "createdAt": "2026-10-24T17:00:00Z",
+      "version": 1,
+      "mime": "text/plain",
+      "sizeBytes": 12,
+      "scanState": "pending",
+      "downloadable": true
+    }
+  },
+  {
+    "schema": "ArtifactMetadata",
+    "valid": false,
+    "value": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "createdAt": "2026-02-30T17:00:00.000Z",
+      "version": 1,
+      "mime": "text/plain",
+      "sizeBytes": 12,
+      "scanState": "pending",
+      "downloadable": true
+    }
+  },
+  {
+    "schema": "ArtifactMetadata",
+    "valid": false,
+    "value": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "createdAt": "2026-10-24T17:00:00.000+00:00",
+      "version": 1,
+      "mime": "text/plain",
+      "sizeBytes": 12,
+      "scanState": "pending",
+      "downloadable": true
+    }
+  },
+  {
+    "schema": "AuthResult",
+    "valid": true,
+    "value": {
+      "status": "challenge_required",
+      "challengeId": "00000000-0000-4000-8000-000000000001",
+      "expiresAt": "2026-10-24T17:00:00.000Z",
+      "methods": ["totp", "recovery_code"]
+    }
+  },
+  {
+    "schema": "AuthResult",
+    "valid": false,
+    "value": {
+      "status": "challenge_required",
+      "challengeId": "00000000-0000-4000-8000-000000000001",
+      "expiresAt": "2026-10-24T17:00:00.000Z",
+      "methods": ["totp"],
+      "tokens": {}
+    }
+  },
+  {
+    "schema": "AuthResult",
+    "valid": false,
+    "value": {
+      "status": "challenge_required",
+      "challengeId": "00000000-0000-4000-8000-000000000001",
+      "expiresAt": "2026-10-24T17:00:00.000Z",
+      "methods": ["email_otp"]
+    }
+  },
+  {
+    "schema": "AuthResult",
+    "valid": false,
+    "value": {
+      "status": "session_issued"
+    }
+  },
+  {
+    "schema": "ApiError",
+    "valid": true,
+    "value": {
+      "error": {
+        "code": "EVENT_CURSOR_EXPIRED",
+        "messageKey": "events.resync"
+      },
+      "meta": {
+        "correlationId": "00000000-0000-4000-8000-000000000001"
+      }
+    }
+  },
+  {
+    "schema": "ApiError",
+    "valid": false,
+    "value": {
+      "error": {
+        "code": "INTERNAL_ERROR",
+        "messageKey": "error.internal",
+        "stack": "secret"
+      },
+      "meta": {
+        "correlationId": "00000000-0000-4000-8000-000000000001"
+      }
+    }
+  },
+  {
+    "schema": "AuthResult",
+    "valid": true,
+    "value": {
+      "status": "session_issued",
+      "tokens": {
+        "accessToken": "synthetic-test-secret-never-a-real-credential",
+        "refreshToken": "synthetic-test-secret-never-a-real-credential-refresh",
+        "tokenType": "Bearer",
+        "accessExpiresAt": "2026-10-24T17:05:00.000Z",
+        "refreshExpiresAt": "2026-10-31T17:00:00.000Z",
+        "sessionId": "66666666-6666-4666-8666-666666666666"
+      },
+      "user": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "version": 1,
+        "email": "operator@example.test",
+        "emailVerifiedAt": "2026-10-24T17:00:00.000Z",
+        "roles": ["user"],
+        "locale": "en",
+        "theme": "dark",
+        "state": "active",
+        "mfa": {
+          "enabled": false
+        },
+        "createdAt": "2026-10-24T17:00:00.000Z"
+      }
+    }
+  }
+]

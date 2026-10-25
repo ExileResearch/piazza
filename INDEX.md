@@ -2,35 +2,6 @@
 
 > _Updated Oct 24, 2026; subject to change as the project progresses._
 
-## Generated handoff structure
-
-```text
-piazza/
-└── .docs/
-    ├── blueprint.md
-    ├── data_models.md
-    ├── contracts.md
-    ├── journeys.md
-    ├── research.md
-    ├── generation-checks.md
-    ├── agents/
-    │   ├── backend/   backend-agent.json, backend-prd.md, backend-flow.md, backend-stack.md
-    │   ├── web/       web-agent.json, web-prd.md, web-flow.md, web-stack.md
-    │   ├── mobile/    mobile-agent.json, mobile-prd.md, mobile-flow.md, mobile-stack.md
-    │   ├── landing/   landing-agent.json, landing-prd.md, landing-flow.md, landing-stack.md
-    │   ├── desktop/   desktop-agent.json, desktop-prd.md, desktop-flow.md, desktop-stack.md
-    │   └── frameworks/   preserved framework reference notes
-    └── plans/
-        ├── 00-contracts.md
-        ├── 01-backend.md
-        ├── 02-web_client.md
-        ├── 03-mobile_client.md
-        ├── 04-landing_page.md
-        ├── 04a-desktop_client.md
-        ├── 05-security_pass.md
-        └── 06-release_pass.md
-```
-
 ```shell
 piazza/   # Root of project.
 ├── .docs/                      # Planning, specifications, and agent constraints.
@@ -68,6 +39,9 @@ piazza/   # Root of project.
 │   ├── server-core/        # Core NestJS server source.
 │   └── web-client/         # Angular web client source.
 │
+├── packages/               # Independently built shared packages.
+│   └── contracts/          # Versioned schemas/routes, OpenAPI, MCP and Dart parity fixtures.
+│
 ├── bin/                    # Launch script helper files.
 │   └── launch              # Launch the compose stack.
 │
@@ -87,7 +61,7 @@ piazza/   # Root of project.
 
 # Piazza — Package and Intended Architecture
 
-No application code, manifests, Compose file or Dockerfiles are generated. Future implementation creates:
+Application scaffolds are present. Contracts plan 00 is complete at private baseline 1.0.0, with canonical schemas/policies, typed route/MCP catalogs, generated OpenAPI, representative Dart parity and independent ESM/CommonJS consumer checks. See [decision 0004](.docs/decisions/0004-contract-baseline.md) for evidence and limits. Backend plan 01 is next; app features still follow the orchestration gates. Implementation ownership is:
 
 | Location            | Responsibility                                                              | Technology                                         |
 | ------------------- | --------------------------------------------------------------------------- | -------------------------------------------------- |

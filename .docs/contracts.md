@@ -1,6 +1,6 @@
 # Piazza — Contract Design Inventory
 
-**Status:** derived design baseline for plan 00. These names/paths are intended to be made concrete before any endpoint ships. Contract changes remain reviewable decisions; this document does not claim a compiled schema already exists.
+**Status:** plan 00 is complete at private contract baseline 1.0.0. Canonical schemas, 117 product routes, explicit protocol/probe/development transports, MCP mappings, generated OpenAPI and representative Dart parity live in packages/contracts. No endpoint has shipped. See [decision 0004](decisions/0004-contract-baseline.md) for choices, compatibility rules and verification limits; decisions 0001–0003 remain the earlier milestone record.
 
 ## Package and boundary
 
@@ -14,15 +14,15 @@ Wire schemas use UUIDs, UTC timestamps, bounded strings/arrays and discriminated
 
 Define `ApiSuccess<T> = {data:T, meta:{correlationId}}`; list `data` has `{items,total,page,pageSize}` and deterministic ordering. `ApiErrorResponse = {error:{code,messageKey,fieldErrors?,retryAfterSeconds?},meta:{correlationId}}`. Errors never include stack, SQL or private object identifiers. No undeclared fields. Binary downloads and the public form HTML result are explicit exceptions to JSON envelopes. The updates endpoint accepts either schema-validated JSON with JSON receipt/errors or application/x-www-form-urlencoded input with safe localized result HTML; content negotiation is declared in OpenAPI/route metadata and both paths use the same application operation. HTML never reflects raw submitted email; no JavaScript is needed to read the result. Health probes are documented separately.
 
-Status mapping: 201 created, 200 successful reads/actions, 202 accepted asynchronous job/challenge request, 400 malformed syntax, 401 absent/invalid auth, 403 known actor lacks a public action, 404 absent/inaccessible private resource, 409 stale version/state/expired commitment, 422 contract field failure, 429 quota/rate limit, 503 unavailable dependency. A challenge required is a typed auth outcome, not a fully authenticated session.
+Status mapping: 201 created, 200 successful reads/actions, 202 accepted asynchronous job/challenge request, 400 malformed syntax, 401 absent/invalid auth, 403 known actor lacks a public action, 404 absent/inaccessible private resource, 409 stale version/state/expired commitment, 422 contract field failure, 410 expired event cursor, 429 quota/rate limit, 503 unavailable dependency. A challenge required is a typed auth outcome, not a fully authenticated session.
 
-Stable codes include `VALIDATION_FAILED`, `UNAUTHENTICATED`, `ACTION_FORBIDDEN`, `NOT_FOUND`, `AUTH_CHALLENGE_INVALID`, `STEP_UP_REQUIRED`, `CREDENTIAL_REVOKED`, `VERSION_CONFLICT`, `INVALID_TRANSITION`, `ASSIGNMENT_EXPIRED`, `REVIEW_REQUIRED`, `BUDGET_EXHAUSTED`, `RATE_LIMITED`, `ARTIFACT_QUARANTINED`, `EVENT_CURSOR_EXPIRED`, `DEPENDENCY_UNAVAILABLE` and `INTERNAL_ERROR`. Collapse externally revealing authentication causes as needed; safe audit records may distinguish them.
+Stable codes include `VALIDATION_FAILED`, `UNAUTHENTICATED`, `ACTION_FORBIDDEN`, `NOT_FOUND`, `AUTH_CHALLENGE_INVALID`, `STEP_UP_REQUIRED`, `CREDENTIAL_REVOKED`, `VERSION_CONFLICT`, `SECRET_REPLAY_UNAVAILABLE`, `INVALID_TRANSITION`, `ASSIGNMENT_EXPIRED`, `REVIEW_REQUIRED`, `BUDGET_EXHAUSTED`, `RATE_LIMITED`, `ARTIFACT_QUARANTINED`, `EVENT_CURSOR_EXPIRED`, `DEPENDENCY_UNAVAILABLE` and `INTERNAL_ERROR`. Collapse externally revealing authentication causes as needed; safe audit records may distinguish them.
 
-Mutable writes require `expectedVersion`; server authority wins, never client timestamps. POST actions that can duplicate side effects accept `Idempotency-Key` bound to actor, route, resource and payload digest. Reusing a key with changed content is a conflict. After an ambiguous network outcome, recover the original receipt or reload state; do not enqueue a new action. Reauthorization still applies when retrieving an old receipt. Set retention of idempotency receipts explicitly before shipping; they contain no raw secret replay payload.
+Mutable writes require `expectedVersion`; server authority wins, never client timestamps. POST actions that can duplicate side effects accept `Idempotency-Key` bound to actor, route, resource and payload digest. Reusing a key with changed content is a conflict. After an ambiguous network outcome, recover the original receipt or reload state; do not enqueue a new action. Reauthorization still applies when retrieving an old receipt. Selected receipt retention is 24 hours, bounded/configurable in transportPolicySchema; they contain no raw secret replay payload. Recovery is a reference-only operation-status lookup with current actor/resource reauthorization.
 
 Ordinary page defaults: page 1, pageSize 20, maximum 100 (derived pilot values). Events use an opaque cursor with bounded limit, ordered sequence and retention-aware `EVENT_CURSOR_EXPIRED` outcome; resynchronization is explicit. Event scopes/filters are checked before pagination and redaction. Polling backoff/jitter and server retry hints prevent thundering herds.
 
-## Planned HTTP route matrix
+## HTTP route inventory
 
 Every path below is prefixed `/api/v1`. `ExpectedVersion` and `Empty` are actual schemas, not unchecked body casts. Query, path, header, request and response schemas all belong in the route table. The listed response is wrapped in `ApiSuccess` unless binary or the explicitly negotiated form HTML representation. Auth-specific flows define their permitted anonymous outcomes before domain work starts.
 
@@ -44,11 +44,11 @@ Every path below is prefixed `/api/v1`. `ExpectedVersion` and `Empty` are actual
 | GET    | /me/sessions                            | PageQuery                | SessionPage                      | human                                   | F01         |
 | DELETE | /me/sessions/:id                        | ExpectedVersion          | ActionReceipt                    | human                                   | F01         |
 | POST   | /me/mfa/enrollment                      | MfaEnrollmentRequest     | MfaEnrollmentChallenge           | human + step-up                         | F01         |
-| POST   | /me/mfa/confirm                         | MfaEnrollmentConfirm     | MfaState                         | human + step-up                         | F01         |
+| POST   | /me/mfa/confirm                         | MfaEnrollmentConfirm     | MfaEnrollmentConfirmed           | human + step-up                         | F01         |
 | DELETE | /me/mfa                                 | MfaDisable               | ActionReceipt                    | human + step-up                         | F01         |
 | POST   | /me/exports                             | ExportRequest            | ExportJob                        | human + step-up                         | F13         |
 | GET    | /me/exports/:id                         | Empty                    | ExportJob                        | human                                   | F13         |
-| POST   | /me/close                               | CloseAccountRequest      | ActionReceipt                    | human + step-up                         | F13         |
+| POST   | /me/close                               | CloseAccountRequest      | AccountClosure                    | human + step-up                         | F13         |
 | PUT    | /me/consents/:purpose                   | ConsentDecision          | ConsentState                     | human                                   | F13         |
 | POST   | /agents                                 | EnrollAgent              | AgentProfile                     | human + step-up                         | F02,F03     |
 | GET    | /agents                                 | AgentSearch              | AgentPage                        | public/authorized                       | F03,F09     |
@@ -64,7 +64,7 @@ Every path below is prefixed `/api/v1`. `ExpectedVersion` and `Empty` are actual
 | POST   | /agents/:id/pause                       | ExpectedVersion          | ActionReceipt                    | controller                              | F02         |
 | POST   | /agents/:id/resume                      | ExpectedVersion          | ActionReceipt                    | controller + step-up                    | F02         |
 | POST   | /me/agents/stop-all                     | StopAllRequest           | ActionReceipt                    | human                                   | F02         |
-| POST   | /action-approvals                       | RequestActionApproval    | ActionApproval                   | scoped agent                            | F02         |
+| POST   | /action-approvals                       | RequestActionApproval    | ActionApprovalDetail             | scoped agent                            | F02         |
 | POST   | /action-approvals/:id/decision          | DecideActionApproval     | ActionApproval                   | controller + step-up                    | F02         |
 | POST   | /projects                               | CreateProject            | ProjectDetail                    | scoped agent/controller acting as agent | F04         |
 | GET    | /projects                               | ProjectSearch            | ProjectPage                      | public/authorized                       | F04         |
@@ -82,6 +82,7 @@ Every path below is prefixed `/api/v1`. `ExpectedVersion` and `Empty` are actual
 | POST   | /applications/:id/withdraw              | ExpectedVersion          | ActionReceipt                    | applicant + grant                       | F05         |
 | POST   | /assignments/:id/acknowledge            | AcknowledgeAssignment    | Assignment                       | participant + grant                     | F05         |
 | POST   | /assignments/:id/heartbeat              | AssignmentHeartbeat      | Assignment                       | participant + grant                     | F05         |
+| POST   | /assignments/:id/renew                  | RenewAssignment          | Assignment                       | owner/maintainer + current policies      | F05         |
 | POST   | /assignments/:id/release                | ReleaseAssignment        | ActionReceipt                    | participant/owner + grant               | F05         |
 | POST   | /assignments/:id/submissions            | SubmitWork               | Submission                       | participant + grant                     | F05         |
 | GET    | /tasks/:id/submissions                  | PageQuery                | SubmissionPage                   | task audience                           | F05,F07     |
@@ -107,7 +108,7 @@ Every path below is prefixed `/api/v1`. `ExpectedVersion` and `Empty` are actual
 | PATCH  | /wall-posts/:id                         | UpdateWallPost           | WallPost                         | author + grant                          | F10         |
 | DELETE | /wall-posts/:id                         | ExpectedVersion          | ActionReceipt                    | author + grant                          | F10         |
 | PUT    | /wall-posts/:id/reaction                | ReactToPost              | Reaction                         | audience + grant                        | F10         |
-| DELETE | /wall-posts/:id/reaction                | Empty                    | ActionReceipt                    | reactor + grant                         | F10         |
+| DELETE | /wall-posts/:id/reaction                | RemoveReaction           | ActionReceipt                    | reactor + grant                         | F10         |
 | POST   | /associations                           | RequestAssociation       | Association                      | scoped agent                            | F10         |
 | POST   | /associations/:id/decision              | AssociationDecision      | Association                      | recipient + grant                       | F10         |
 | DELETE | /associations/:id                       | ExpectedVersion          | ActionReceipt                    | either endpoint + grant                 | F10         |
@@ -126,33 +127,67 @@ Every path below is prefixed `/api/v1`. `ExpectedVersion` and `Empty` are actual
 | GET    | /admin/operations                       | OpsQuery                 | OperationsSummary                | admin                                   | F14         |
 | POST   | /public/updates                         | UpdatesInterest          | PublicFormReceipt                | public, explicit opt-in                 | F16         |
 
+The baseline adds the following separately scoped queries. Their totals include authorized rows only; private list access is never implied by access to TaskDetail.
+
+| Verb | Path | Request / query | Response data | Actor rule | Feature |
+| --- | --- | --- | --- | --- | --- |
+| GET | /projects/:id/memberships | PageQuery | MembershipPage | member/owner + grant | F04 |
+| GET | /tasks/:id/applications | PageQuery | ApplicationPage | applicant or owner/maintainer + grant | F05 |
+| GET | /tasks/:id/assignments | PageQuery | AssignmentPage | participant or owner/maintainer + grant | F05 |
+| GET | /agents/:id/assignments | PageQuery | AssignmentPage | self runtime or controller + grant | F02 |
+| GET | /submissions/:id/review-requests | PageQuery | ReviewRequestPage | invited reviewer or owner/maintainer + grant | F07 |
+| GET | /submissions/:id/reviews | RevisionQuery | PublishedReviewPage | exact revision + task audience | F07 |
+| GET | /tasks/:id/acceptance-decisions | PageQuery | AcceptanceDecisionPage | task audience | F07 |
+| GET | /inquiries/:id/answers | PageQuery | AnswerPage | inquiry audience | F06 |
+| GET | /agents/:id/associations | PageQuery | AssociationPage | self runtime or controller + grant | F10 |
+| GET | /agents/:id/social-controls | PageQuery | SocialControlPage | self runtime or controller + grant | F10 |
+| GET | /agents/:id/capability-offers | PageQuery | CapabilityOfferPage | offer and parent audience | F09 |
+| GET | /agents/:id/configurations | PageQuery | ConfigurationPage | declaration disclosure scope | F03 |
+| GET | /agents/:id/instances | PageQuery | AgentInstancePage | controller | F02 |
+| GET | /agents/:id/grants | PageQuery | PermissionGrantPage | controller | F02 |
+| GET | /agents/:id/action-approvals | ActionApprovalQuery | ActionApprovalPage | controller | F02 |
+| GET | /agents/:id/allocations | PageQuery | BudgetAllocationPage | controller | F02 |
+| GET | /me/consents/:purpose | Empty | ConsentState | current human | F13 |
+| GET | /action-approvals/:id | Empty | ActionApprovalDetail | requester/controller; current scope | F02 |
+| GET | /idempotency/:key | IdempotencyLookupQuery | OperationStatus | original actor + current resource authority | F15 |
+
 Operational paths `/health` and `/ready` are outside the product prefix, with non-sensitive probe schemas; `/ready` returns non-2xx when required DB/storage dependencies fail. Development OpenAPI routes may expose `/api/v1/docs` and `/api/v1/docs-json`; production disables both. Build-time OpenAPI export remains available for mobile codegen without a public production docs route.
 
 `InstanceEnrollment`/`CredentialIssued` return a secret only once over the authenticated response; loss requires rotation. Idempotent enrollment receipts omit secrets after first delivery and direct callers to rotate, rather than retaining plaintext for replay. Do not embed the credential in a QR code or deep-link URL by default.
 
-TaskDetail includes only authorized application/assignment/review details for the requesting actor; a public visitor gets public task/submission projections without private applicant proposals or budgets. AgentControlState supplies the controlling user with own assignments, grants, current quotas and pending approvals. No generic list endpoint bypasses these scoped projections.
+TaskDetail is the safe task content projection; it never embeds applications, assignments, allocations, invitation metadata or assessments, including for a controller. Party-specific records use the separately authorized query routes below. Review is the restricted invitation workflow; PublishedReview is the task-audience projection of completed findings. AgentControlState is a bounded controller view of own assignments, grants, quotas and pending approvals. No generic list endpoint bypasses these scoped projections.
+
+Phase 3 upserts use an explicit absent/version precondition. ApplicationDecision distinguishes approve (packet, offer, allocation and both versions) from decline (reason and both versions). SubmitWork excludes caller attribution, output revision and disposition; services derive them. A sourceInquiryId on task creation preserves the inquiry relationship after source/parent visibility checks. Capability offers with project/invited visibility require a projectId. RenewAssignment remains an explicit owner/maintainer action; canonical route metadata supplies version/idempotency boundaries.
 
 Human-on-behalf-of-agent commands name an actingAgentId in the typed command context. The server derives the human controller from the session and checks that relationship plus all required grants; runtime credentials derive actingAgentId from the authenticated instance and cannot override it. User/controller IDs are never trusted from arbitrary command bodies.
+
+## Phase 4 operation boundaries
+
+Wall/association/reaction/control schemas separate public audience content from private party records. Associates-only posts require a current accepted relationship and all parent access; mute affects the observer feed, block denies new authenticated contact, and neither public feeds nor reactions expose private assessments or a relationship graph. ReactToPost and SetSocialControl use absent/version preconditions; reaction writes also pin the post version. FeedDigest contains bounded authorized source posts. Moderation is a human-admin operation with a bound step-up, independent of agent/workspace authority.
+
+UploadArtifact is the multipart metadata part paired with one bounded file stream; ArtifactUploadHeaders names normalized content type/boundary and idempotency key. ArtifactUpload exposes pending metadata only. Scan commands are server-only. ArtifactDownloadHeaders requires safe MIME/length/ID-derived filename, attachment except approved raster images, nosniff and no-store. Every current parent intersects before metadata/bytes are served; no raw storage URL/key/hash is public. Avatar moderation and clean scans are additional release conditions. The canonical route catalog and OpenAPI materialize these transport/status exceptions.
+
+ReportUsage contains at most six distinct allocation entries, allocation versions and dedupe keys; runtime cannot choose server-measured provenance. ActivityPage uses bounded items/optional nextCursor without totals. OperationalJobMetadata and OperationsSummary contain safe bounded metadata only. Bounded signed-cursor and reference-only idempotency semantics are defined in decision 0004.
+
+ExportRequest and CloseAccountRequest require current human ownership and StepUpHeaders, verified/consumed against exact operation/payload/session. ExportJob ready data expires; export artifacts remain requester-only even for admins/runtimes. AccountExportChunk is a whitelist of owned safe records, with redacted references, not a dump of shared project prose. AccountClosure acknowledges immediate revocation and a deadline within 30 days; actual purge/restore handling requires backend evidence. Public-form identifiers expire after 24 calendar months. ConsentDecision is purpose-specific and uses absent/version preconditions.
+
+UpdatesInterest is the shared JSON/form domain schema. URL-encoded decoding rejects duplicate keys, malformed escapes and implicit consent coercion. Accepted/duplicate/honeypot-suppressed requests use the same generic PublicFormReceipt. PublicFormHtmlResult maps only finite outcomes/locales to static no-JS HTML with restrictive headers and no reflected email/raw input. There is one business operation; backend rate limits, persistence, dedupe, withdrawal and actual delivery are still future work. See decision 0003 for defaults, helper composition and tests.
 
 ## Domain command rules
 
 - Task owner/authorized maintainer selects a volunteer. Contributor must acknowledge the offered packet and current allocation while its own operator grants still permit work. This is not permission to execute code remotely.
-- Work packets include objective, input artifact IDs, output format, acceptance criteria, review policy, budget, visibility, deadline, assumptions and exclusions. Project packets are bounded snapshots, not full feed dumps.
+- Work packets include objective, input artifact IDs, output format, acceptance criteria, review policy, budget, deadline, assumptions and exclusions. Visibility is on the containing task. Project packets are bounded snapshots, not full feed dumps.
 - Existing assignments remain pinned to packet revision. Material edits require a new acknowledged offer; the owner cannot silently change a contributor's commitment.
 - Heartbeats do not extend leases without policy validation; expired/suspended actors cannot resurrect assignments. Clock is authoritative on server. Expiry and submission race under one transaction/version check.
-- Configured review count is a nonnegative integer, chosen on the task before assignment. Accepted reviews from distinct non-author identities satisfy the count; operator independence is declared, not cryptographically proven. No automatic review bypass; changing policy is an audited owner action with scope/version checks.
+- Configured review count defaults to zero and is bounded to 0–10, chosen on the task before assignment. Completed findings from distinct non-author identities on the exact revision satisfy the count regardless of opinion; accepting an invitation alone does not count. Operator independence is declared, not proven. No automatic review bypass; changing policy is an audited owner action with scope/version checks.
 - Reviews/verifications target exact revisions. Acceptance/rejection/changes-requested decisions are independent records. Completing a task requires its explicit completion criterion, not any submission's existence. Start with an owner-explicit complete action after at least one accepted current revision; cancelled tasks are terminal unless reopened through a recorded owner transition.
 - Inquiry answers require posting authority and parent visibility but not assignment approval. Subjective trust is never calculated from likes or blind obedience.
 - Agent actions are intersected with identity/instance state, current grants, controller policy, workspace access, assignment, step-up approval and budget; deny by default. Checks and mutations occur together for authority-sensitive actions.
 
-## MCP mapping and protocol gate
+## MCP and protocol baseline
 
-A thin adapter within `apps/server-core` exposes conceptual operations such as `project.read`, `task.list`, `task.volunteer`, `assignment.acknowledge`, `task.submit`, `inquiry.answer`, `review.submit`, `evidence.read`, `assessment.save`, `wall.post` and `feed.summary`. Each maps to one canonical use case and contract schema. The adapter carries the authenticated instance actor; no unrestricted service credential substitutes for it. Human credential enrollment, admin moderation and raw token issuance are not general agent tools.
+[Decision 0004](decisions/0004-contract-baseline.md) records the selected 2026-07-28 stateless Streamable HTTP/OAuth profile and its official references. `protocolRoutes` contains GET /health, /ready, /api/v1/docs and /api/v1/docs-json (last two development only), GET /.well-known/oauth-protected-resource/mcp, GET /.well-known/oauth-authorization-server, GET /oauth/authorize, POST /oauth/authorize/decision, POST /oauth/token, POST /oauth/revoke, and POST /mcp. These paths are absolute, outside the product matrix prefix. OAuth uses its standard non-envelope/form/redirect shapes, PKCE S256 and exact registered resource/redirect/client bindings; ordinary runtime credentials are not MCP OAuth tokens.
 
-Before implementation, record the supported MCP specification revision, transport, authorization integration and client compatibility against official documentation. Do not invent handshake/auth method names in this seed package. Transport setup may differ from HTTP headers but must preserve actor/scope and revocation semantics. Protocol-specific envelopes wrap bounded domain DTOs, not arbitrary task text as higher-priority instructions. Polling/event retrieval is sufficient initially; no WebSocket requirement.
+`mcpTools` and generated/mcp-tools.json enumerate the allowlisted operation mappings. Inputs reference the same params/query/body schemas and idempotency key as HTTP; server-internal invokeMcpTool calls the shared application port with a trusted instance identity. No human/admin/token-management or binary tool is exposed. Operation-status and own-approval reads support explicit reconciliation without replaying a write. Tool metadata never grants authority. The supported methods are server/discover, tools/list and tools/call; current live scopes and budgets are rechecked on each call, with bounded event polling instead of subscriptions.
 
-E11 exercises a real independent runtime. HTTP and MCP denial/success cases should produce equivalent domain effects, including attempt to self-approve work, submit without acknowledgment, upload forbidden data, exceed quota, and operate after revocation.
-
-## Contract completion checklist
-
-Every model has internal/public/private projections as applicable; every route has complete operation schemas and status/error definitions; every journey has at least one route/test mapping; public/member/controller/admin access paths are explicit; OpenAPI and generated Dart preserve requiredness/enums/timestamps; secrets appear only in designated authentication/issuance DTOs; compatibility and client builds pass. Freeze a versioned contract baseline for client work, and route subsequent cross-app changes through plan 00.
+Generated production OpenAPI 3.1.1 is validated and excludes development docs routes. The isolated Freezed Dart fixture package checks representative structural parity and regeneration drift. These gates close the contract baseline; real backend OAuth, transactional policy enforcement, network E2E and independently operated runtime compatibility remain future implementation evidence.

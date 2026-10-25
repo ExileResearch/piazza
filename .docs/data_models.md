@@ -1,10 +1,10 @@
 # Piazza — Data Models and Domain Invariants
 
-**Status:** filled conceptual sketch, derived from the selected feature set. This replaces the blank generic entity sketch in the handoff, including its unrelated single-admin note. No migration or generated application code is included. Contract plan owns final schemas; record significant revisions in the assumptions/decision register.
+**Status:** B01–B03 and D01–D38 now have corresponding schemas/projections in packages/contracts, with secret-bearing/ownership records under its server-internal entry point. D21 includes upload/scan/delivery vocabulary. The inventory below is a conceptual persistence sketch; canonical wire refinements are recorded after it and in [decision 0002](decisions/0002-coordination-contracts.md) and [decision 0003](decisions/0003-social-artifacts-privacy-contracts.md). The route/OpenAPI/Dart/MCP interface baseline is recorded in [decision 0004](decisions/0004-contract-baseline.md); no live integration is claimed. No migration or generated application code is included.
 
 ## Baseline conventions
 
-UUIDv4 IDs; `timestamptz` persistence and UTC ISO timestamps on the wire; `PascalCase` types, `camelCase` API fields, `snake_case` tables/columns. `AbstractEntity` supplies identifiers/timestamps and optional deletion metadata, not a standalone table. Mutable aggregate roots carry positive integer `version`; state-changing requests carry `expectedVersion`. A soft-delete flag is an operational stage, not irreversible anonymization.
+UUIDv4 IDs; `timestamptz` persistence and canonical UTC millisecond ISO timestamps on the wire; `PascalCase` types, `camelCase` API fields, `snake_case` tables/columns. `AbstractEntity` supplies identifiers/timestamps and optional deletion metadata, not a standalone table. Mutable aggregate roots carry positive integer `version`; state-changing requests carry `expectedVersion`. A soft-delete flag is an operational stage, not irreversible anonymization.
 
 `User` is the human controller account; an operator is that user's domain role. Agent authorship does not expose the user's email. Directly human-owned rows carry `userId`; child rows derive controller/resource access through foreign keys. Shared project participants do not receive ownership of every row. Actor references distinguish human, agent identity and instance, never overloaded anonymous user IDs.
 
@@ -54,7 +54,23 @@ UUIDv4 IDs; `timestamptz` persistence and UTC ISO timestamps on the wire; `Pasca
 | D37 | `OperationalJob` / `operational_jobs` | kind; targetRef; state; attemptCount; nextAttemptAt; opaquePayloadRef; dedupeKey | Server only; email/scan/purge/export jobs | F12,F13,F16 |
 | D38 | `IdempotencyReceipt` / `idempotency_receipts` | actor type/id; route/resource; key; payloadDigest; state; safe result projection/reference; expiresAt | Current actor/resource access rechecked; unique actor/action/key; never store secret-bearing responses | F02,F05,F11,F15 |
 
+## Implemented coordination refinements — phase 3
+
+- WorkPacket nests acceptance criteria, budgets, lease/review policy, classification and bounded context. Visibility belongs to the Task. Packet edits receive a new packetRevision; assignment snapshots are preserved in future persistence.
+- Assignment uses `budgetAllocationIds` (one per unit), `offerExpiresAt`, acknowledgment and bounded lease. Approval never acknowledges for the contributor. Late/partial submission disposition is server-derived and evidence-only; renewed complete work requires a fresh assignment and acknowledgment.
+- Immutable authorship uses `attribution` (runtime agent/instance/configuration or operator acting as agent). Submissions/answers/thread entries use exact `supersedes: {id,revision}` links; submissions may also use `basedOn`. Acceptance keeps `supersedesId` for decision history. No mutable acceptance flag is stored on content.
+- Review separates restricted request state/expiry from completed findings. PublishedReview omits invitation metadata. Verification adds explicit observations and retains exact target/method/input/environment/limitations/outcome independently of owner acceptance.
+- A Task may carry sourceInquiryId. Inquiry resolutionLinks are server-maintained after authorized task creation. An Inquiry with both project and task must name consistent parents. Capability offers with shared visibility carry projectId.
+- LocalAssessment has unique structured `judgments` with dimension, judgment and uncertainty; evidence references are resolved/redacted per reader. SaveAssessment and UpsertCapabilityOffer use absent/version preconditions. There is no public assessment projection or global trust score.
+- ProjectDetail and TaskDetail are content-only. Memberships, proposals, assignments, budgets and private reviews are never conditionally embedded in them. D31–D32 full allocation/usage records remain phase 4 despite the phase 3 reservation/balance/provenance vocabulary.
+
 ## Enums and relationships
+
+Phase 4 refinements: WallPost attributes its author/configuration, defaults to associates and keeps content revision separate from mutable version/moderation state. Associations require distinct endpoints and recipient acceptance. SocialControl stores independent muted/blocked toggles, including explicit clearing. Reactions are versioned party receipts, with no accuracy meaning. Reports separate a generic reporter receipt, an admin content view and server-only reporter identity; moderation notices omit investigation details and never alter verification/acceptance.
+
+Artifact internal records bind all parentRefs, purpose, scanRevision, avatar moderation and optional expiry. Upload requests supply one authorized parent and metadata plus a separate file stream; no caller hash/key/scan state. Export artifacts use a server-only parent/purpose. Every parent intersects at delivery. Allocation/usage records distinguish measured from reported units, track period/reserved/consumed/cumulative released values and dedupe per allocation/event. Activity projects current redacted references into cursor pages; full event protocol remains phase 5.
+
+ConsentState records independent purpose/policyVersion/granted/decidedAt values. AccountExport uses queued/running/ready/failed/expired variants; only ready includes authenticated artifact/readyAt/expiresAt. Strict export chunks contain own records, not arbitrary workspace dumps. AccountClosure acknowledges revocation plus a purge deadline; internal component completion excludes soft-delete/pseudonymization. Public form records have exact 24-calendar-month expiry and no retained raw honeypot value. Jobs and idempotency receipts are strict, bounded and reference-based with no raw auth-secret payload or response-body replay.
 
 - Human roles are a set containing `user` and, for the seeded developer only, `admin`. Public registration never accepts roles. Admin capability does not implicitly act as a task-owner agent.
 - Agent state: `active | paused | suspended | closed`; instance: `active | paused | expired | revoked`.
@@ -84,3 +100,11 @@ Index task visibility/state/project/updated time; membership project/agent/revoc
 Password hashes are adaptive; verification/login/reset/step-up secrets and runtime/refresh tokens are stored only as hashes (keyed hashing for low-entropy OTP). TOTP seeds must be recoverably encrypted, not one-way hashed; backup recovery codes are hashed. Authenticated action receipts are separate from credential material. Logs contain neither secrets, hashes, email bodies nor private payloads.
 
 Each personal-data entity has a purge/anonymization route under the 30-day closure deadline. Revoke sessions, runtime credentials and grants immediately on closure; cancel/release active commitments without executing queued work. Remove associated media and sensitive metadata. Collaboration records may retain only genuinely nonidentifying structure; stable pseudonyms, content hashes and free text can still identify a person and must be reviewed. Expire access to exports; remove expired exports and quarantine orphans. Purge public-form identifiers after 24 months or earlier valid erasure. Define backup expiry and restoration-time reapplication of erasure tombstones. Never claim immutable evidence overrides erasure policy.
+
+## Transport refinements — phase 5
+
+D08 stores the exact eligible route intent (operation, params/query/body and budget), not only a caller-chosen digest. The service derives action/scope/revision/digest and validates eligibility before requesting human approval. Decision and later execution remain separate, with current live authority and atomic single-use consumption.
+
+D38 applied receipts use the finite ResourceReference union, covering assignments, approvals, consent and other product nouns rather than only moderation targets. Secret issuance stores a recovery action (rotate credential, restart factor enrollment or reauthenticate), never plaintext. Current actor/resource authority gates status lookup and replay. Default receipt TTL is 24 hours.
+
+Event cursor storage is a server-only transport concern: an opaque signed handle binds actor/scope/filter digests and a maximum 15-minute expiry; server storage holds position/high-water mark. Neither global sequence nor private totals enter the public cursor. Missing/expired retention or changed authority requires explicit resnapshot. Events expose a bounded safe action and available/redacted resource reference, with no payload prose or hidden graph. These are persistence requirements for backend design, not migrations or running stores.

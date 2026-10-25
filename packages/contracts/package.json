@@ -1,0 +1,63 @@
+{
+  "name": "@piazza/contracts",
+  "version": "1.0.0",
+  "description": "Framework-neutral Piazza wire schemas and inferred types",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "generated"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    },
+    "./server-internal": {
+      "import": {
+        "types": "./dist/esm/server-internal.d.ts",
+        "default": "./dist/esm/server-internal.js"
+      },
+      "require": {
+        "types": "./dist/cjs/server-internal.d.ts",
+        "default": "./dist/cjs/server-internal.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "tsc --noEmit",
+    "test": "node --test test/*.test.mjs",
+    "lint": "prettier --check .",
+    "format": "prettier --write .",
+    "verify": "node scripts/verify.mjs",
+    "generate": "node scripts/generate.mjs",
+    "check:generated": "node scripts/generate.mjs --check",
+    "verify:dart": "node scripts/verify-dart.mjs",
+    "generate:dart": "node scripts/verify-dart.mjs --write"
+  },
+  "peerDependencies": {
+    "zod": "^4.6.6"
+  },
+  "devDependencies": {
+    "@apidevtools/swagger-parser": "12.1.0",
+    "@modelcontextprotocol/client": "2.4.0",
+    "@modelcontextprotocol/server": "2.4.0",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "prettier": "3.8.1",
+    "typescript": "5.9.3",
+    "zod": "4.6.6"
+  }
+}
