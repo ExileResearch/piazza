@@ -14,7 +14,7 @@ cd ../../apps/server-core
 npm ci
 ```
 
-Copy `apps/server-core/.env.sample` to `.env` in that same directory and supply database credentials. The sample is a configuration template, not a working account or secret. Then, from `apps/server-core`, apply reviewed migrations and start the server:
+For a new setup, copy `apps/server-core/.env.sample` to `.env` in that same directory and supply database credentials. If `.env` already exists, merge only missing settings into their existing sections; do not append the whole template or replace credentials. Commented override examples are optional and already have code defaults. The sample is a configuration template, not a working account or secret. Then, from `apps/server-core`, apply reviewed migrations and start the server:
 
 ```sh
 npm run migration:run
@@ -35,10 +35,14 @@ Failed database connections are retried when readiness is requested, with bounde
 
 CORS uses explicit origins and no cookie credentials. Only configure trusted reverse-proxy hops when the actual proxy topology is known. The current rate limiter belongs to one server process; shared quotas and production ingress controls remain later work.
 
-Development docs require `NODE_ENV=development` and `SWAGGER_ENABLED=true`. `/api/v1/docs` links to `/api/v1/docs-json`, which lists only implemented probes. Production rejects enabled Swagger. The complete prospective contract baseline remains in `packages/contracts/generated/openapi.json`.
+With `NODE_ENV` unset, `PROD=false` selects development mode. Set `SWAGGER_ENABLED=true` to enable development docs; an explicitly supplied `NODE_ENV` must also be `development`. `/api/v1/docs` links to `/api/v1/docs-json`, which lists only implemented probes. Production rejects enabled Swagger. The complete prospective contract baseline remains in `packages/contracts/generated/openapi.json`.
 
 ## Verification and current limits
 
 From `apps/server-core`, run `npm run verify`. It checks the TypeScript build, lint, unit tests, HTTP tests and migrations/constraints on an automatically created disposable PostgreSQL container. See the [server developer notes](../apps/server-core/README.md) for individual checks and migration generation.
 
-Your existing `.env` is not rewritten automatically. Legacy `EMAIL`, `PROD` and `WEB_CLIENT_URL` aliases remain recognized, with conflicts rejected. Legacy cookie and LLM settings are unused by this foundation. Authentication secrets and email provider settings are validated if supplied, but no login, admin seed or mail delivery is active yet. Research, privacy retention, restore procedures and production release gates remain implementation work; this foundation is not a production release.
+Your existing `.env` is not rewritten automatically. The sample follows the existing `EMAIL`, `PROD` and `APP_WEB_URL` names. `ADMIN_EMAIL`, `NODE_ENV` and `WEB_CLIENT_URL` remain accepted alternatives; do not add a second name for a setting you already configured. Conflicting alternatives are rejected.
+
+Keep `RATE_LIMIT_AUTH_TTL_MS` and `RATE_LIMIT_AUTH_LIMIT` once in Authentication: they control the auth profile. The optional `RATE_LIMIT_TTL_MS` and `RATE_LIMIT_LIMIT` settings independently control general API traffic; omitting them retains the 60-second/120-request defaults.
+
+Legacy cookie and LLM settings are unused by this foundation. Authentication secrets and email provider settings are validated if supplied, but no login, admin seed or mail delivery is active yet. Research, privacy retention, restore procedures and production release gates remain implementation work; this foundation is not a production release.

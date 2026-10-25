@@ -43,3 +43,9 @@ Node emits the expected experimental VM modules warning during Jest. TypeORM's P
 Implementation uses the installed package declarations/source and official guidance: [Nest rate limiting](https://docs.nestjs.com/security/rate-limiting), [Nest database integration](https://docs.nestjs.com/techniques/database), [TypeORM datasource options](https://typeorm.io/docs/data-source/data-source-options/) and [TypeORM migrations](https://typeorm.io/docs/migrations/setup/). Adapter, core and middleware major versions are evaluated together, not inferred from a single historical framework example.
 
 Next: close the explicitly deferred container integration when requested, then backend phase 2 authentication/session/provider use cases. No admin account is seeded or password reset by the foundation. Broader security/release readiness and all product journeys remain unchecked in their plans.
+
+## Configuration reconciliation — 2026-10-25
+
+The operator's existing `.env` has one assignment per key. The initial sample moved the existing auth limit pair into the system block and introduced alternative names unnecessarily. The corrected sample preserves `PROD`, `EMAIL` and `APP_WEB_URL`, places `RATE_LIMIT_AUTH_*` only in Authentication, and comments optional new overrides so existing installations need not copy default values. The general API limit and auth limit remain distinct controls. Existing secret values are not merged with or copied into the sample. Runtime alias compatibility is unchanged; sample/documentation layout is the correction.
+
+Validation: both files have no duplicate assignments; the corrected sample parses with synthetic credentials and the existing-name mapping/general versus auth defaults remain intact. The 23 configuration tests pass. No real credentials or runtime behavior changed.
